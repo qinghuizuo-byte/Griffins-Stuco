@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if survey_type == 'event' %}Event Feedback{% else %}Welcome Survey{% endif %} | Stuco Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-light: #e6f0fa;
+            --primary-dark: #004488;
+            --bg: #f0f6ff;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --star-empty: #e2e8f0;
+            --star-filled: #f59e0b;
+            --success: #166534;
+            --success-bg: #dcfce7;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(160deg, #f0f6ff 0%, #e6f0fa 100%);
+            min-height: 100vh;
+            padding: 32px 16px 80px;
+            color: var(--text);
+        }
+
+        .survey-container {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .survey-header {
+            text-align: center;
+            margin-bottom: 36px;
+            animation: fadeDown 0.5s ease;
+        }
+
+        @keyframes fadeDown {
+            from { opacity: 0; transform: translateY(-16px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .survey-header .griffin { font-size: 3.2rem; margin-bottom: 10px; }
+        .survey-header h1 {
+            font-size: 2rem;
+            font-weight: 900;
+            color: var(--primary-dark);
+            margin-bottom: 8px;
+        }
+        .survey-header p {
+            font-size: 0.95rem;
+            color: var(--muted);
+            max-width: 520px;
+            margin: 0 auto;
+            line-height: 1.6;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            background: var(--card);
+            border-radius: 14px;
+            padding: 18px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 10px rgba(0,102,204,0.08);
+            border: 1px solid var(--border);
+        }
+
+        .progress-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--muted);
+        }
+
+        .progress-bar-track {
+            height: 8px;
+            background: var(--star-empty);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary) 0%, #2563eb 100%);
+            border-radius: 999px;
+            transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .step-dots {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--star-empty);
+            transition: all 0.3s ease;
+        }
+        .dot.active { background: var(--primary); transform: scale(1.3); }
+        .dot.done { background: #22c55e; }
+
+        /* Step Cards */
+        .step-card {
+            background: var(--card);
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 16px rgba(0,102,204,0.08);
+            border: 1px solid var(--border);
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .step-card.active { display: block; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .step-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--primary-dark);
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .step-subtitle {
+            font-size: 0.88rem;
+            color: var(--muted);
+            margin-bottom: 28px;
+            line-height: 1.5;
+        }
+
+        .semester-tag {
+            display: inline-block;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        /* Rating Questions */
+        .rating-group {
+            margin-bottom: 28px;
+        }
+
+        .rating-label {
+            font-size: 0.92rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rating-label .q-icon { font-size: 1.1rem; }
+
+        /* Star Rating */
+        .star-rating {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 6px;
+        }
+
+        .star-rating input[type="radio"] {
+            display: none;
+        }
+
+        .star-rating label {
+            font-size: 2rem;
+            cursor: pointer;
+            color: var(--star-empty);
+            transition: color 0.15s ease, transform 0.1s ease;
+            user-select: none;
+            line-height: 1;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label,
+        .star-rating input:checked ~ label {
+            color: var(--star-filled);
+        }
+
+        /* reverse order trick for CSS-only star rating */
+        .star-rating {
+            flex-direction: row-reverse;
+            justify-content: flex-end;
+        }
+
+        .star-rating label:hover,
+        .star-rating label:hover ~ label {
+            color: var(--star-filled);
+            transform: scale(1.1);
+        }
+
+        .star-rating input:checked ~ label {
+            color: var(--star-filled);
+        }
+
+        .star-hint {
+            font-size: 0.75rem;
+            color: var(--muted);
+            height: 16px;
+            transition: opacity 0.2s;
+        }
+
+        /* Textarea */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .form-group textarea,
+        .form-group input[type="text"],
+        .form-group select {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-family: 'Inter', sans-serif;
+            color: var(--text);
+            resize: vertical;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            background: #fafbfc;
+        }
+
+        .form-group textarea:focus,
+        .form-group input[type="text"]:focus,
+        .form-group select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0,102,204,0.12);
+            outline: none;
+            background: white;
+        }
+
+        .form-group textarea { min-height: 100px; }
+
+        /* Checkbox grid */
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .checkbox-item:hover { border-color: var(--primary); background: var(--primary-light); }
+        .checkbox-item input { accent-color: var(--primary); width: 16px; height: 16px; }
+        .checkbox-item.checked { border-color: var(--primary); background: var(--primary-light); }
+
+        /* NPS Slider */
+        .nps-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 4px;
+            margin-bottom: 6px;
+        }
+
+        .nps-btn {
+            padding: 10px 4px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            text-align: center;
+            font-size: 0.82rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.15s;
+            background: white;
+            color: var(--muted);
+        }
+
+        .nps-btn:hover { border-color: var(--primary); background: var(--primary-light); color: var(--primary); }
+        .nps-btn.selected { border-color: var(--primary); background: var(--primary); color: white; }
+
+        .nps-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.72rem;
+            color: var(--muted);
+        }
+
+        /* Navigation Buttons */
+        .step-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 32px;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+        }
+
+        .btn {
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,102,204,0.25);
+        }
+        .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 6px 16px rgba(0,102,204,0.35); }
+
+        .btn-ghost {
+            background: transparent;
+            color: var(--muted);
+            border: 1.5px solid var(--border);
+        }
+        .btn-ghost:hover { border-color: var(--primary); color: var(--primary); background: var(--primary-light); }
+
+        .btn-success {
+            background: #16a34a;
+            color: white;
+            box-shadow: 0 4px 12px rgba(22,163,74,0.3);
+        }
+        .btn-success:hover { background: #15803d; transform: translateY(-1px); }
+
+        .step-counter {
+            font-size: 0.82rem;
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        /* Validation error */
+        .field-error {
+            font-size: 0.78rem;
+            color: #dc2626;
+            margin-top: 4px;
+            display: none;
+        }
+
+        .field-error.visible { display: block; }
+
+        /* Summary step */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .summary-block {
+            background: var(--bg);
+            border-radius: 10px;
+            padding: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .summary-block .sem-name {
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 8px;
+        }
+
+        .mini-stars { color: var(--star-filled); font-size: 0.9rem; }
+
+        .overall-score {
+            text-align: center;
+            padding: 28px;
+            background: linear-gradient(135deg, var(--primary-light) 0%, #dbeafe 100%);
+            border-radius: 14px;
+            border: 1.5px solid #bfdbfe;
+            margin-bottom: 24px;
+        }
+
+        .overall-score .big-number {
+            font-size: 4rem;
+            font-weight: 900;
+            color: var(--primary-dark);
+            line-height: 1;
+        }
+
+        .overall-score .score-label { font-size: 0.9rem; color: var(--primary); font-weight: 600; margin-top: 4px; }
+
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: 1fr; }
+            .nps-grid { grid-template-columns: repeat(6, 1fr); }
+            .step-card { padding: 20px; }
+        }
+
+        /* Skip link */
+        .skip-link {
+            text-align: center;
+            margin-top: 16px;
+        }
+        .skip-link a {
+            font-size: 0.8rem;
+            color: var(--muted);
+            text-decoration: none;
+            border-bottom: 1px dashed var(--border);
+        }
+        .skip-link a:hover { color: var(--primary); }
+    </style>
+</head>
+<body>
+<form method="POST" action="{{ url_for('submit_survey') }}" id="surveyForm">
+<input type="hidden" name="survey_type" value="{{ survey_type }}">
+{% if survey_type == 'event' %}
+<input type="hidden" name="event_id" value="{{ event.id if event else '' }}">
+{% endif %}
+
+<div class="survey-container">
+
+    <!-- Header -->
+    <div class="survey-header">
+        <div class="griffin">🦅</div>
+        {% if survey_type == 'first_login' %}
+        <h1>Welcome to Stuco Portal!</h1>
+        <p>Before you dive in, help us understand your experience over the <strong>past 4 semesters</strong>. Your honest ratings shape how we improve. Takes about <strong>3–4 minutes</strong>.</p>
+        {% else %}
+        <h1>Event Feedback</h1>
+        <p>Share your thoughts on <strong>{{ event.title if event else 'the recent event' }}</strong>. Your feedback directly helps us improve future events!</p>
+        {% endif %}
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-labels">
+            <span id="stepLabel">Step 1 of {{ total_steps }}</span>
+            <span id="pctLabel">0% complete</span>
+        </div>
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="progressFill" style="width: 0%"></div>
+        </div>
+        <div class="step-dots" id="stepDots">
+            {% for i in range(total_steps) %}
+            <div class="dot {% if i == 0 %}active{% endif %}" id="dot-{{ i }}"></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% if survey_type == 'first_login' %}
+    <!-- ============================================================ -->
+    <!-- STEP 0: Your Profile -->
+    <!-- ============================================================ -->
+    <div class="step-card active" id="step-0">
+        <div class="step-title">👋 Quick Intro</div>
+        <div class="step-subtitle">This helps us understand who's filling this out so we can segment responses by committee and role.</div>
+
+        <div class="form-group">
+            <label>Your Committee / Role</label>
+            <select name="committee" required>
+                <option value="" disabled selected>Select your committee</option>
+                <option value="Executive Council">Executive Council (President / VP)</option>
+                <option value="Logistics">Logistics & Operations</option>
+                <option value="Public Relations">Public Relations</option>
+                <option value="Finance & Budget">Finance & Budget (Treasurer)</option>
+                <option value="Decor & Spirit">Decor & Spirit</option>
+                <option value="General Member">General Member</option>
+                <option value="Advisor / Staff">Advisor / Staff</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>How many semesters have you been in Stuco?</label>
+            <select name="semesters_in_stuco">
+                <option value="1">1 semester (just joined)</option>
+                <option value="2">2 semesters</option>
+                <option value="3">3 semesters</option>
+                <option value="4">4 semesters</option>
+                <option value="5+">5+ semesters</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label>Which events did you help organize? (select all that apply)</label>
+            <div class="checkbox-grid" id="eventsCheckboxes">
+                <label class="checkbox-item"><input type="checkbox" name="organized_events" value="Homecoming"> 🎉 Homecoming Dance</label>
+                <label class="checkbox-item"><input type="checkbox" name="organized_events" value="Pep Rally"> 📣 Pep Rallies</label>
+                <label class="checkbox-item"><input type="checkbox" name="organized_events" value="Club Rush"> 🎪 Club Rush Fair</label>
+                <label class="checkbox-item"><input type="checkbox" name="organized_events" value="Spirit Week"> 👕 Spirit Week</label>
+                <label class="checkbox-item"><input type="checkbox" name="organized_events" value="Fundraiser"> 💰 Fundraisers</label>
+                <label class="checkbox-item"><input type="checkbox" name="organized_events" value="Community Service"> 🌱 Community Service</label>
+                <label class="checkbox-item"><input type="checkbox" name="organized_events" value="Awards Ceremony"> 🏆 Awards Ceremony</label>
+                <label class="checkbox-item"><input type="checkbox" name="organized_events" value="Other"> ➕ Other Events</label>
+            </div>
+        </div>
+
+        <div class="step-nav">
+            <span class="step-counter">Step 1 of {{ total_steps }}</span>
+            <button type="button" class="btn btn-primary" onclick="nextStep()">Continue →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- STEP 1: Semester 1 — AY 2023-24 -->
+    <!-- ============================================================ -->
+    <div class="step-card" id="step-1">
+        <span class="semester-tag">📅 Semester 1 | AY 2023–24 (Aug – Dec 2023)</span>
+        <div class="step-title">📊 Semester 1 Ratings</div>
+        <div class="step-subtitle">Rate your experience during the <strong>first semester of AY 2023–24</strong>. Select N/A if you weren't active that semester.</div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🌟</span> Overall Stuco satisfaction this semester</div>
+            <div class="star-rating" data-name="s1_overall">
+                <input type="radio" name="s1_overall" value="5" id="s1_o5"><label for="s1_o5" title="5 - Excellent">★</label>
+                <input type="radio" name="s1_overall" value="4" id="s1_o4"><label for="s1_o4" title="4 - Good">★</label>
+                <input type="radio" name="s1_overall" value="3" id="s1_o3"><label for="s1_o3" title="3 - Okay">★</label>
+                <input type="radio" name="s1_overall" value="2" id="s1_o2"><label for="s1_o2" title="2 - Poor">★</label>
+                <input type="radio" name="s1_overall" value="1" id="s1_o1"><label for="s1_o1" title="1 - Very Poor">★</label>
+            </div>
+            <div class="star-hint" id="hint_s1_overall"></div>
+        </div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🎉</span> Event quality & variety</div>
+            <div class="star-rating" data-name="s1_events">
+                <input type="radio" name="s1_events" value="5" id="s1_e5"><label for="s1_e5">★</label>
+                <input type="radio" name="s1_events" value="4" id="s1_e4"><label for="s1_e4">★</label>
+                <input type="radio" name="s1_events" value="3" id="s1_e3"><label for="s1_e3">★</label>
+                <input type="radio" name="s1_events" value="2" id="s1_e2"><label for="s1_e2">★</label>
+                <input type="radio" name="s1_events" value="1" id="s1_e1"><label for="s1_e1">★</label>
+            </div>
+            <div class="star-hint" id="hint_s1_events"></div>
+        </div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">📢</span> Internal communication & transparency</div>
+            <div class="star-rating" data-name="s1_comms">
+                <input type="radio" name="s1_comms" value="5" id="s1_c5"><label for="s1_c5">★</label>
+                <input type="radio" name="s1_comms" value="4" id="s1_c4"><label for="s1_c4">★</label>
+                <input type="radio" name="s1_comms" value="3" id="s1_c3"><label for="s1_c3">★</label>
+                <input type="radio" name="s1_comms" value="2" id="s1_c2"><label for="s1_c2">★</label>
+                <input type="radio" name="s1_comms" value="1" id="s1_c1"><label for="s1_c1">★</label>
+            </div>
+            <div class="star-hint" id="hint_s1_comms"></div>
+        </div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🤝</span> Teamwork & collaboration</div>
+            <div class="star-rating" data-name="s1_team">
+                <input type="radio" name="s1_team" value="5" id="s1_t5"><label for="s1_t5">★</label>
+                <input type="radio" name="s1_team" value="4" id="s1_t4"><label for="s1_t4">★</label>
+                <input type="radio" name="s1_team" value="3" id="s1_t3"><label for="s1_t3">★</label>
+                <input type="radio" name="s1_team" value="2" id="s1_t2"><label for="s1_t2">★</label>
+                <input type="radio" name="s1_team" value="1" id="s1_t1"><label for="s1_t1">★</label>
+            </div>
+            <div class="star-hint" id="hint_s1_team"></div>
+        </div>
+
+        <div class="form-group">
+            <label>💬 What stood out most (positive or negative)?</label>
+            <textarea name="s1_highlight" placeholder="e.g. 'The Homecoming theme was a big hit but budgets were unclear...'"></textarea>
+        </div>
+
+        <div class="step-nav">
+            <button type="button" class="btn btn-ghost" onclick="prevStep()">← Back</button>
+            <span class="step-counter">Step 2 of {{ total_steps }}</span>
+            <button type="button" class="btn btn-primary" onclick="nextStep()">Continue →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- STEP 2: Semester 2 — AY 2023-24 -->
+    <!-- ============================================================ -->
+    <div class="step-card" id="step-2">
+        <span class="semester-tag">📅 Semester 2 | AY 2023–24 (Jan – May 2024)</span>
+        <div class="step-title">📊 Semester 2 Ratings</div>
+        <div class="step-subtitle">Rate your experience during the <strong>second semester of AY 2023–24</strong>.</div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🌟</span> Overall Stuco satisfaction</div>
+            <div class="star-rating">
+                <input type="radio" name="s2_overall" value="5" id="s2_o5"><label for="s2_o5">★</label>
+                <input type="radio" name="s2_overall" value="4" id="s2_o4"><label for="s2_o4">★</label>
+                <input type="radio" name="s2_overall" value="3" id="s2_o3"><label for="s2_o3">★</label>
+                <input type="radio" name="s2_overall" value="2" id="s2_o2"><label for="s2_o2">★</label>
+                <input type="radio" name="s2_overall" value="1" id="s2_o1"><label for="s2_o1">★</label>
+            </div>
+        </div>
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🎉</span> Event quality & variety</div>
+            <div class="star-rating">
+                <input type="radio" name="s2_events" value="5" id="s2_e5"><label for="s2_e5">★</label>
+                <input type="radio" name="s2_events" value="4" id="s2_e4"><label for="s2_e4">★</label>
+                <input type="radio" name="s2_events" value="3" id="s2_e3"><label for="s2_e3">★</label>
+                <input type="radio" name="s2_events" value="2" id="s2_e2"><label for="s2_e2">★</label>
+                <input type="radio" name="s2_events" value="1" id="s2_e1"><label for="s2_e1">★</label>
+            </div>
+        </div>
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">📢</span> Communication & transparency</div>
+            <div class="star-rating">
+                <input type="radio" name="s2_comms" value="5" id="s2_c5"><label for="s2_c5">★</label>
+                <input type="radio" name="s2_comms" value="4" id="s2_c4"><label for="s2_c4">★</label>
+                <input type="radio" name="s2_comms" value="3" id="s2_c3"><label for="s2_c3">★</label>
+                <input type="radio" name="s2_comms" value="2" id="s2_c2"><label for="s2_c2">★</label>
+                <input type="radio" name="s2_comms" value="1" id="s2_c1"><label for="s2_c1">★</label>
+            </div>
+        </div>
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🤝</span> Teamwork & collaboration</div>
+            <div class="star-rating">
+                <input type="radio" name="s2_team" value="5" id="s2_t5"><label for="s2_t5">★</label>
+                <input type="radio" name="s2_team" value="4" id="s2_t4"><label for="s2_t4">★</label>
+                <input type="radio" name="s2_team" value="3" id="s2_t3"><label for="s2_t3">★</label>
+                <input type="radio" name="s2_team" value="2" id="s2_t2"><label for="s2_t2">★</label>
+                <input type="radio" name="s2_team" value="1" id="s2_t1"><label for="s2_t1">★</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>💬 Key takeaway from this semester?</label>
+            <textarea name="s2_highlight" placeholder="e.g. 'Club Rush was our best event — massive student turnout...'"></textarea>
+        </div>
+
+        <div class="step-nav">
+            <button type="button" class="btn btn-ghost" onclick="prevStep()">← Back</button>
+            <span class="step-counter">Step 3 of {{ total_steps }}</span>
+            <button type="button" class="btn btn-primary" onclick="nextStep()">Continue →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- STEP 3: Semester 1 — AY 2024-25 -->
+    <!-- ============================================================ -->
+    <div class="step-card" id="step-3">
+        <span class="semester-tag">📅 Semester 1 | AY 2024–25 (Aug – Dec 2024)</span>
+        <div class="step-title">📊 Semester 3 Ratings</div>
+        <div class="step-subtitle">Rate your experience during <strong>Semester 1, AY 2024–25</strong>.</div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🌟</span> Overall Stuco satisfaction</div>
+            <div class="star-rating">
+                <input type="radio" name="s3_overall" value="5" id="s3_o5"><label for="s3_o5">★</label>
+                <input type="radio" name="s3_overall" value="4" id="s3_o4"><label for="s3_o4">★</label>
+                <input type="radio" name="s3_overall" value="3" id="s3_o3"><label for="s3_o3">★</label>
+                <input type="radio" name="s3_overall" value="2" id="s3_o2"><label for="s3_o2">★</label>
+                <input type="radio" name="s3_overall" value="1" id="s3_o1"><label for="s3_o1">★</label>
+            </div>
+        </div>
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🎉</span> Event quality & variety</div>
+            <div class="star-rating">
+                <input type="radio" name="s3_events" value="5" id="s3_e5"><label for="s3_e5">★</label>
+                <input type="radio" name="s3_events" value="4" id="s3_e4"><label for="s3_e4">★</label>
+                <input type="radio" name="s3_events" value="3" id="s3_e3"><label for="s3_e3">★</label>
+                <input type="radio" name="s3_events" value="2" id="s3_e2"><label for="s3_e2">★</label>
+                <input type="radio" name="s3_events" value="1" id="s3_e1"><label for="s3_e1">★</label>
+            </div>
+        </div>
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">📢</span> Communication & transparency</div>
+            <div class="star-rating">
+                <input type="radio" name="s3_comms" value="5" id="s3_c5"><label for="s3_c5">★</label>
+                <input type="radio" name="s3_comms" value="4" id="s3_c4"><label for="s3_c4">★</label>
+                <input type="radio" name="s3_comms" value="3" id="s3_c3"><label for="s3_c3">★</label>
+                <input type="radio" name="s3_comms" value="2" id="s3_c2"><label for="s3_c2">★</label>
+                <input type="radio" name="s3_comms" value="1" id="s3_c1"><label for="s3_c1">★</label>
+            </div>
+        </div>
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🤝</span> Teamwork & collaboration</div>
+            <div class="star-rating">
+                <input type="radio" name="s3_team" value="5" id="s3_t5"><label for="s3_t5">★</label>
+                <input type="radio" name="s3_team" value="4" id="s3_t4"><label for="s3_t4">★</label>
+                <input type="radio" name="s3_team" value="3" id="s3_t3"><label for="s3_t3">★</label>
+                <input type="radio" name="s3_team" value="2" id="s3_t2"><label for="s3_t2">★</label>
+                <input type="radio" name="s3_team" value="1" id="s3_t1"><label for="s3_t1">★</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>💬 What was the biggest challenge or win?</label>
+            <textarea name="s3_highlight" placeholder="e.g. 'Budget constraints made Spirit Week difficult, but the team came through...'"></textarea>
+        </div>
+
+        <div class="step-nav">
+            <button type="button" class="btn btn-ghost" onclick="prevStep()">← Back</button>
+            <span class="step-counter">Step 4 of {{ total_steps }}</span>
+            <button type="button" class="btn btn-primary" onclick="nextStep()">Continue →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- STEP 4: Semester 2 — AY 2024-25 -->
+    <!-- ============================================================ -->
+    <div class="step-card" id="step-4">
+        <span class="semester-tag">📅 Semester 2 | AY 2024–25 (Jan – May 2025)</span>
+        <div class="step-title">📊 Semester 4 Ratings</div>
+        <div class="step-subtitle">Rate your experience during <strong>Semester 2, AY 2024–25</strong> — the most recent completed semester.</div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🌟</span> Overall Stuco satisfaction</div>
+            <div class="star-rating">
+                <input type="radio" name="s4_overall" value="5" id="s4_o5"><label for="s4_o5">★</label>
+                <input type="radio" name="s4_overall" value="4" id="s4_o4"><label for="s4_o4">★</label>
+                <input type="radio" name="s4_overall" value="3" id="s4_o3"><label for="s4_o3">★</label>
+                <input type="radio" name="s4_overall" value="2" id="s4_o2"><label for="s4_o2">★</label>
+                <input type="radio" name="s4_overall" value="1" id="s4_o1"><label for="s4_o1">★</label>
+            </div>
+        </div>
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🎉</span> Event quality & variety</div>
+            <div class="star-rating">
+                <input type="radio" name="s4_events" value="5" id="s4_e5"><label for="s4_e5">★</label>
+                <input type="radio" name="s4_events" value="4" id="s4_e4"><label for="s4_e4">★</label>
+                <input type="radio" name="s4_events" value="3" id="s4_e3"><label for="s4_e3">★</label>
+                <input type="radio" name="s4_events" value="2" id="s4_e2"><label for="s4_e2">★</label>
+                <input type="radio" name="s4_events" value="1" id="s4_e1"><label for="s4_e1">★</label>
+            </div>
+        </div>
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">📢</span> Communication & transparency</div>
+            <div class="star-rating">
+                <input type="radio" name="s4_comms" value="5" id="s4_c5"><label for="s4_c5">★</label>
+                <input type="radio" name="s4_comms" value="4" id="s4_c4"><label for="s4_c4">★</label>
+                <input type="radio" name="s4_comms" value="3" id="s4_c3"><label for="s4_c3">★</label>
+                <input type="radio" name="s4_comms" value="2" id="s4_c2"><label for="s4_c2">★</label>
+                <input type="radio" name="s4_comms" value="1" id="s4_c1"><label for="s4_c1">★</label>
+            </div>
+        </div>
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🤝</span> Teamwork & collaboration</div>
+            <div class="star-rating">
+                <input type="radio" name="s4_team" value="5" id="s4_t5"><label for="s4_t5">★</label>
+                <input type="radio" name="s4_team" value="4" id="s4_t4"><label for="s4_t4">★</label>
+                <input type="radio" name="s4_team" value="3" id="s4_t3"><label for="s4_t3">★</label>
+                <input type="radio" name="s4_team" value="2" id="s4_t2"><label for="s4_t2">★</label>
+                <input type="radio" name="s4_team" value="1" id="s4_t1"><label for="s4_t1">★</label>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>💬 Most memorable moment this semester?</label>
+            <textarea name="s4_highlight" placeholder="e.g. 'The Graduation ceremony planning was our smoothest yet...'"></textarea>
+        </div>
+
+        <div class="step-nav">
+            <button type="button" class="btn btn-ghost" onclick="prevStep()">← Back</button>
+            <span class="step-counter">Step 5 of {{ total_steps }}</span>
+            <button type="button" class="btn btn-primary" onclick="nextStep()">Continue →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- STEP 5: Overall + NPS -->
+    <!-- ============================================================ -->
+    <div class="step-card" id="step-5">
+        <div class="step-title">🏆 Big Picture</div>
+        <div class="step-subtitle">Looking across all 4 semesters — how do you feel about Stuco as a whole?</div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">💳</span> Budget transparency & fairness across all semesters</div>
+            <div class="star-rating">
+                <input type="radio" name="overall_budget" value="5" id="ob5"><label for="ob5">★</label>
+                <input type="radio" name="overall_budget" value="4" id="ob4"><label for="ob4">★</label>
+                <input type="radio" name="overall_budget" value="3" id="ob3"><label for="ob3">★</label>
+                <input type="radio" name="overall_budget" value="2" id="ob2"><label for="ob2">★</label>
+                <input type="radio" name="overall_budget" value="1" id="ob1"><label for="ob1">★</label>
+            </div>
+        </div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">📈</span> Stuco's overall improvement over the 4 semesters</div>
+            <div class="star-rating">
+                <input type="radio" name="overall_improvement" value="5" id="oi5"><label for="oi5">★</label>
+                <input type="radio" name="overall_improvement" value="4" id="oi4"><label for="oi4">★</label>
+                <input type="radio" name="overall_improvement" value="3" id="oi3"><label for="oi3">★</label>
+                <input type="radio" name="overall_improvement" value="2" id="oi2"><label for="oi2">★</label>
+                <input type="radio" name="overall_improvement" value="1" id="oi1"><label for="oi1">★</label>
+            </div>
+        </div>
+
+        <div class="rating-group" style="margin-bottom: 32px;">
+            <div class="rating-label" style="margin-bottom: 12px;"><span class="q-icon">📣</span> How likely are you to recommend joining Stuco to a student? (0 = Not at all, 10 = Absolutely)</div>
+            <div class="nps-grid" id="npsGrid">
+                {% for i in range(11) %}
+                <div class="nps-btn" data-value="{{ i }}" onclick="selectNPS({{ i }})">{{ i }}</div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="nps_score" id="npsInput" value="">
+            <div class="nps-labels">
+                <span>Not at all likely</span>
+                <span>Extremely likely</span>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label>🌟 What's the #1 thing Stuco should keep doing?</label>
+            <input type="text" name="keep_doing" placeholder="e.g. 'Monthly town halls with the principal'">
+        </div>
+
+        <div class="form-group">
+            <label>🔧 What's the #1 thing Stuco should change or improve?</label>
+            <input type="text" name="improve" placeholder="e.g. 'More inclusive event planning for all grade levels'">
+        </div>
+
+        <div class="form-group">
+            <label>🗣️ Any other thoughts, ideas, or shout-outs?</label>
+            <textarea name="open_feedback" placeholder="This is completely anonymous — speak your mind!"></textarea>
+        </div>
+
+        <div class="step-nav">
+            <button type="button" class="btn btn-ghost" onclick="prevStep()">← Back</button>
+            <span class="step-counter">Step 6 of {{ total_steps }}</span>
+            <button type="button" class="btn btn-primary" onclick="nextStep()">Review →</button>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- STEP 6: Review & Submit -->
+    <!-- ============================================================ -->
+    <div class="step-card" id="step-6">
+        <div class="step-title">✅ Review & Submit</div>
+        <div class="step-subtitle">Here's a summary of your ratings across all 4 semesters. Submit when you're ready!</div>
+
+        <div id="reviewSummary">
+            <!-- Dynamically filled by JS -->
+        </div>
+
+        <div class="form-group" style="margin-top: 20px;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500;">
+                <input type="checkbox" name="anonymous" value="true" style="width:18px;height:18px;accent-color:var(--primary);">
+                Submit anonymously (your name won't be attached to responses)
+            </label>
+        </div>
+
+        <div class="step-nav">
+            <button type="button" class="btn btn-ghost" onclick="prevStep()">← Back</button>
+            <span class="step-counter">Final Step</span>
+            <button type="submit" class="btn btn-success" id="submitBtn">🎉 Submit Survey</button>
+        </div>
+    </div>
+
+    {% else %}
+    <!-- ============================================================ -->
+    <!-- EVENT FEEDBACK SURVEY (shorter, post-event) -->
+    <!-- ============================================================ -->
+    <div class="step-card active" id="step-0">
+        <span class="semester-tag">🎉 Post-Event Survey</span>
+        <div class="step-title">{{ event.title if event else 'Event Feedback' }}</div>
+        <div class="step-subtitle">📅 {{ event.display_date if event else '' }} &nbsp;•&nbsp; 📍 {{ event.location if event else '' }}</div>
+
+        <div class="rating-group" style="margin-top: 20px;">
+            <div class="rating-label"><span class="q-icon">🌟</span> Overall event satisfaction</div>
+            <div class="star-rating">
+                <input type="radio" name="ev_overall" value="5" id="evo5"><label for="evo5">★</label>
+                <input type="radio" name="ev_overall" value="4" id="evo4"><label for="evo4">★</label>
+                <input type="radio" name="ev_overall" value="3" id="evo3"><label for="evo3">★</label>
+                <input type="radio" name="ev_overall" value="2" id="evo2"><label for="evo2">★</label>
+                <input type="radio" name="ev_overall" value="1" id="evo1"><label for="evo1">★</label>
+            </div>
+        </div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">📋</span> Organization & planning quality</div>
+            <div class="star-rating">
+                <input type="radio" name="ev_org" value="5" id="evor5"><label for="evor5">★</label>
+                <input type="radio" name="ev_org" value="4" id="evor4"><label for="evor4">★</label>
+                <input type="radio" name="ev_org" value="3" id="evor3"><label for="evor3">★</label>
+                <input type="radio" name="ev_org" value="2" id="evor2"><label for="evor2">★</label>
+                <input type="radio" name="ev_org" value="1" id="evor1"><label for="evor1">★</label>
+            </div>
+        </div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">🎨</span> Venue setup & atmosphere</div>
+            <div class="star-rating">
+                <input type="radio" name="ev_venue" value="5" id="evv5"><label for="evv5">★</label>
+                <input type="radio" name="ev_venue" value="4" id="evv4"><label for="evv4">★</label>
+                <input type="radio" name="ev_venue" value="3" id="evv3"><label for="evv3">★</label>
+                <input type="radio" name="ev_venue" value="2" id="evv2"><label for="evv2">★</label>
+                <input type="radio" name="ev_venue" value="1" id="evv1"><label for="evv1">★</label>
+            </div>
+        </div>
+
+        <div class="rating-group">
+            <div class="rating-label"><span class="q-icon">👥</span> Student engagement & turnout</div>
+            <div class="star-rating">
+                <input type="radio" name="ev_engagement" value="5" id="eveng5"><label for="eveng5">★</label>
+                <input type="radio" name="ev_engagement" value="4" id="eveng4"><label for="eveng4">★</label>
+                <input type="radio" name="ev_engagement" value="3" id="eveng3"><label for="eveng3">★</label>
+                <input type="radio" name="ev_engagement" value="2" id="eveng2"><label for="eveng2">★</label>
+                <input type="radio" name="ev_engagement" value="1" id="eveng1"><label for="eveng1">★</label>
+            </div>
+        </div>
+
+        <div class="rating-group">
+            <div class="rating-label" style="margin-bottom: 12px;"><span class="q-icon">📣</span> Would you attend this event again? (0–10)</div>
+            <div class="nps-grid" id="npsGrid">
+                {% for i in range(11) %}
+                <div class="nps-btn" data-value="{{ i }}" onclick="selectNPS({{ i }})">{{ i }}</div>
+                {% endfor %}
+            </div>
+            <input type="hidden" name="nps_score" id="npsInput" value="">
+            <div class="nps-labels"><span>Definitely not</span><span>Absolutely yes</span></div>
+        </div>
+
+        <div class="form-group" style="margin-top: 24px;">
+            <label>🌟 What was the best part of this event?</label>
+            <input type="text" name="ev_best" placeholder="e.g. 'The DJ was incredible!'">
+        </div>
+
+        <div class="form-group">
+            <label>🔧 What should we improve next time?</label>
+            <textarea name="ev_improve" placeholder="e.g. 'More food options would have been great...'"></textarea>
+        </div>
+
+        <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; font-weight: 500;">
+                <input type="checkbox" name="anonymous" value="true" style="width:18px;height:18px;accent-color:var(--primary);">
+                Submit anonymously
+            </label>
+        </div>
+
+        <div class="step-nav" style="justify-content: flex-end;">
+            <button type="submit" class="btn btn-success">🎉 Submit Feedback</button>
+        </div>
+    </div>
+    {% endif %}
+
+</div><!-- end survey-container -->
+</form>
+
+<div class="skip-link">
+    <a href="{{ url_for('home') }}">Skip survey — remind me later</a>
+</div>
+
+<script>
+    const TOTAL_STEPS = {{ total_steps }};
+    let currentStep = 0;
+
+    const STAR_HINTS = ['', 'Very poor — major issues', 'Below expectations', 'Okay — meets basic needs', 'Good — exceeded in some areas', 'Excellent — truly outstanding'];
+
+    function updateProgress() {
+        const pct = Math.round((currentStep / (TOTAL_STEPS - 1)) * 100);
+        document.getElementById('progressFill').style.width = pct + '%';
+        document.getElementById('stepLabel').textContent = `Step ${currentStep + 1} of ${TOTAL_STEPS}`;
+        document.getElementById('pctLabel').textContent = pct + '% complete';
+
+        for (let i = 0; i < TOTAL_STEPS; i++) {
+            const dot = document.getElementById('dot-' + i);
+            if (!dot) continue;
+            dot.classList.remove('active', 'done');
+            if (i < currentStep) dot.classList.add('done');
+            else if (i === currentStep) dot.classList.add('active');
+        }
+    }
+
+    function showStep(n) {
+        document.querySelectorAll('.step-card').forEach(el => el.classList.remove('active'));
+        const card = document.getElementById('step-' + n);
+        if (card) card.classList.add('active');
+        updateProgress();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function nextStep() {
+        if (currentStep < TOTAL_STEPS - 1) {
+            // On the final step, build the review summary
+            if (currentStep === TOTAL_STEPS - 2) buildReviewSummary();
+            currentStep++;
+            showStep(currentStep);
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 0) {
+            currentStep--;
+            showStep(currentStep);
+        }
+    }
+
+    // NPS selector
+    function selectNPS(value) {
+        document.querySelectorAll('.nps-btn').forEach(btn => btn.classList.remove('selected'));
+        const btn = document.querySelector(`.nps-btn[data-value="${value}"]`);
+        if (btn) btn.classList.add('selected');
+        document.getElementById('npsInput').value = value;
+    }
+
+    // Star rating hints
+    document.querySelectorAll('.star-rating input[type="radio"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const group = this.name;
+            const hintEl = document.getElementById('hint_' + group);
+            if (hintEl) {
+                hintEl.textContent = STAR_HINTS[parseInt(this.value)] || '';
+            }
+        });
+    });
+
+    // Build review summary before final step
+    function buildReviewSummary() {
+        const sems = [
+            { key: 's1', label: 'Sem 1 AY 2023–24' },
+            { key: 's2', label: 'Sem 2 AY 2023–24' },
+            { key: 's3', label: 'Sem 1 AY 2024–25' },
+            { key: 's4', label: 'Sem 2 AY 2024–25' },
+        ];
+
+        const cats = ['overall', 'events', 'comms', 'team'];
+        const catLabels = { overall: '⭐ Overall', events: '🎉 Events', comms: '📢 Comms', team: '🤝 Team' };
+
+        let html = '<div class="summary-grid">';
+        sems.forEach(sem => {
+            html += `<div class="summary-block">
+                <div class="sem-name">${sem.label}</div>`;
+            cats.forEach(cat => {
+                const val = getRadioValue(sem.key + '_' + cat);
+                const stars = val ? '★'.repeat(parseInt(val)) + '<span style="color:#e2e8f0">' + '★'.repeat(5 - parseInt(val)) + '</span>' : '<span style="color:#e2e8f0">Not rated</span>';
+                html += `<div style="font-size:0.8rem;margin-bottom:4px;">${catLabels[cat]}: <span class="mini-stars">${stars}</span></div>`;
+            });
+            html += '</div>';
+        });
+        html += '</div>';
+
+        const nps = document.getElementById('npsInput').value;
+        if (nps !== '') {
+            html += `<div style="text-align:center;padding:14px;background:var(--primary-light);border-radius:10px;margin-bottom:16px;">
+                <strong style="color:var(--primary-dark);">NPS Score: ${nps}/10</strong>
+            </div>`;
+        }
+
+        document.getElementById('reviewSummary').innerHTML = html;
+    }
+
+    function getRadioValue(name) {
+        const el = document.querySelector(`input[name="${name}"]:checked`);
+        return el ? el.value : null;
+    }
+
+    // Checkbox styling
+    document.querySelectorAll('.checkbox-item input').forEach(cb => {
+        cb.addEventListener('change', function() {
+            this.closest('.checkbox-item').classList.toggle('checked', this.checked);
+        });
+    });
+
+    // Init
+    updateProgress();
+</script>
+</body>
+</html>

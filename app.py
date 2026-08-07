@@ -73,6 +73,13 @@ class User(UserMixin):
 # Store active sessions in memory (reset on redeploy — fine for this use case)
 active_users = {}
 
+# Track which users have completed the first-login survey
+survey_completed_users = set()
+
+# Track pending event surveys per user: {user_id: [event_id, ...]}
+pending_event_surveys = {}
+
+
 
 @login_manager.user_loader
 def load_user(user_id):
@@ -130,9 +137,19 @@ def google_callback():
     active_users[user_id] = user
     login_user(user, remember=True)
 
+    # If this user hasn't completed the first-login survey, send them there
+    if user_id not in survey_completed_users:
+        return redirect(url_for('survey_page'))
+
+    # Check for pending event survey
+    if user_id in pending_event_surveys and pending_event_surveys[user_id]:
+        event_id = pending_event_surveys[user_id][0]
+        return redirect(url_for('survey_page', survey_type='event', event_id=event_id))
+
     # Redirect to the page they originally tried to visit, or home
     next_page = request.args.get('next') or url_for('home')
     return redirect(next_page)
+
 
 
 @app.route('/logout')
@@ -667,6 +684,263 @@ def update_stock_status(item_id):
         item['status'] = request.form.get('status', item['status'])
         flash(f"Updated status for {item['name']}", "success")
     return redirect(url_for('vending_hub'))
+
+
+# ==========================================
+# SURVEY & STATISTICS DATA
+# ==========================================
+
+# All submitted survey responses
+SURVEY_RESPONSES = []
+
+SEMESTER_KEYS = ['s1', 's2', 's3', 's4']
+SEMESTER_LABELS = [
+    'Sem 1 AY 23–24',
+    'Sem 2 AY 23–24',
+    'Sem 1 AY 24–25',
+    'Sem 2 AY 24–25',
+]
+
+
+# ==========================================
+# SURVEY ROUTES
+# ==========================================
+
+@app.route('/survey')
+@login_required
+def survey_page():
+    survey_type = request.args.get('survey_type', 'first_login')
+    event_id = request.args.get('event_id')
+    event = EVENTS.get(int(event_id)) if event_id else None
+    total_steps = 7 if survey_type == 'first_login' else 1
+    return render_template(
+        'survey.html',
+        survey_type=survey_type,
+        event=event,
+        total_steps=total_steps
+    )
+
+
+@app.route('/survey/submit', methods=['POST'])
+@login_required
+def submit_survey():
+    from datetime import datetime
+    survey_type = request.form.get('survey_type', 'first_login')
+    anonymous = request.form.get('anonymous') == 'true'
+
+    response = {
+        'id': len(SURVEY_RESPONSES) + 1,
+        'user_id': current_user.id,
+        'user_name': 'Anonymous' if anonymous else current_user.name,
+        'user_email': '' if anonymous else current_user.email,
+        'submitted_at': datetime.now().strftime('%Y-%m-%d %H:%M'),
+        'survey_type': survey_type,
+        'committee': request.form.get('committee', ''),
+        'semesters_in_stuco': request.form.get('semesters_in_stuco', ''),
+        'organized_events': request.form.getlist('organized_events'),
+        'nps_score': request.form.get('nps_score', ''),
+        'keep_doing': request.form.get('keep_doing', ''),
+        'improve': request.form.get('improve', ''),
+        'open_feedback': request.form.get('open_feedback', ''),
+        'overall_budget': _safe_int(request.form.get('overall_budget')),
+        'overall_improvement': _safe_int(request.form.get('overall_improvement')),
+    }
+
+    if survey_type == 'first_login':
+        # Collect per-semester ratings
+        response['semester_ratings'] = {}
+        for key in SEMESTER_KEYS:
+            response['semester_ratings'][key] = {
+                'overall': _safe_int(request.form.get(f'{key}_overall')),
+                'events':  _safe_int(request.form.get(f'{key}_events')),
+                'comms':   _safe_int(request.form.get(f'{key}_comms')),
+                'team':    _safe_int(request.form.get(f'{key}_team')),
+                'highlight': request.form.get(f'{key}_highlight', ''),
+            }
+        # Mark user as survey-complete
+        survey_completed_users.add(current_user.id)
+
+    elif survey_type == 'event':
+        event_id = _safe_int(request.form.get('event_id'))
+        response['event_id'] = event_id
+        response['event_feedback'] = {
+            'overall':    _safe_int(request.form.get('ev_overall')),
+            'org':        _safe_int(request.form.get('ev_org')),
+            'venue':      _safe_int(request.form.get('ev_venue')),
+            'engagement': _safe_int(request.form.get('ev_engagement')),
+            'best':       request.form.get('ev_best', ''),
+            'improve':    request.form.get('ev_improve', ''),
+        }
+        # Remove pending event survey for this user
+        uid = current_user.id
+        if uid in pending_event_surveys and event_id in pending_event_surveys[uid]:
+            pending_event_surveys[uid].remove(event_id)
+
+    SURVEY_RESPONSES.append(response)
+    flash("✅ Thank you! Your survey response has been recorded.", "success")
+    return redirect(url_for('home'))
+
+
+def _safe_int(val, default=0):
+    """Safely convert to int, returning default if None/empty."""
+    try:
+        return int(val) if val else default
+    except (ValueError, TypeError):
+        return default
+
+
+def _avg(values):
+    """Return average of non-zero values, or 0."""
+    vals = [v for v in values if v and v > 0]
+    return round(sum(vals) / len(vals), 2) if vals else 0
+
+
+# ==========================================
+# STATISTICS ROUTE
+# ==========================================
+
+@app.route('/stats')
+@login_required
+def stats_page():
+    sem_responses = [r for r in SURVEY_RESPONSES if r['survey_type'] == 'first_login']
+    event_responses = [r for r in SURVEY_RESPONSES if r['survey_type'] == 'event']
+
+    # --- Semester-by-semester averages ---
+    def sem_avg(key, cat):
+        vals = [r['semester_ratings'][key][cat]
+                for r in sem_responses
+                if r.get('semester_ratings') and r['semester_ratings'][key][cat] > 0]
+        return _avg(vals) if vals else 0
+
+    overall_by_sem = [sem_avg(k, 'overall') for k in SEMESTER_KEYS]
+    events_by_sem  = [sem_avg(k, 'events')  for k in SEMESTER_KEYS]
+    comms_by_sem   = [sem_avg(k, 'comms')   for k in SEMESTER_KEYS]
+    team_by_sem    = [sem_avg(k, 'team')    for k in SEMESTER_KEYS]
+
+    budget_vals = [r.get('overall_budget', 0) for r in sem_responses if r.get('overall_budget', 0) > 0]
+    budget_by_sem = [_avg(budget_vals)] * 4  # Single overall budget score spread across semesters
+
+    # --- KPI totals ---
+    all_overall = [r['semester_ratings'][k]['overall']
+                   for r in sem_responses
+                   for k in SEMESTER_KEYS
+                   if r.get('semester_ratings') and r['semester_ratings'][k]['overall'] > 0]
+    all_events = [r['semester_ratings'][k]['events']
+                  for r in sem_responses
+                  for k in SEMESTER_KEYS
+                  if r.get('semester_ratings') and r['semester_ratings'][k]['events'] > 0]
+
+    nps_vals = []
+    for r in SURVEY_RESPONSES:
+        try:
+            nps_vals.append(int(r['nps_score']))
+        except (ValueError, TypeError):
+            pass
+
+    avg_overall = "%.1f" % _avg(all_overall) if all_overall else "—"
+    avg_events  = "%.1f" % _avg(all_events)  if all_events  else "—"
+    avg_nps     = "%.1f" % _avg(nps_vals)    if nps_vals    else "—"
+
+    # --- Rating distribution (how many 1s, 2s, 3s, 4s, 5s across everything) ---
+    dist = [0, 0, 0, 0, 0]  # index 0 = rating 5, index 4 = rating 1
+    for v in all_overall:
+        if 1 <= v <= 5:
+            dist[5 - v] += 1
+    rating_distribution = dist  # [count of 5s, 4s, 3s, 2s, 1s]
+
+    # --- Semester rows for comparison table ---
+    semester_rows = []
+    for i, key in enumerate(SEMESTER_KEYS):
+        semester_rows.append({
+            'label': SEMESTER_LABELS[i],
+            'overall': overall_by_sem[i] or 0,
+            'events':  events_by_sem[i]  or 0,
+            'comms':   comms_by_sem[i]   or 0,
+            'team':    team_by_sem[i]    or 0,
+        })
+
+    # --- Event feedback aggregation ---
+    event_feedback_list = []
+    event_ids_seen = set()
+    for r in event_responses:
+        eid = r.get('event_id')
+        if eid not in event_ids_seen:
+            event_ids_seen.add(eid)
+            matching = [x for x in event_responses if x.get('event_id') == eid]
+            ef = matching[0].get('event_feedback', {})
+            avg_fn = lambda cat: _avg([m['event_feedback'].get(cat, 0) for m in matching if m.get('event_feedback')])
+            event_obj = EVENTS.get(eid, {})
+            ev_nps_vals = []
+            for m in matching:
+                try:
+                    ev_nps_vals.append(int(m['nps_score']))
+                except Exception:
+                    pass
+            event_feedback_list.append({
+                'event_title': event_obj.get('title', f'Event #{eid}'),
+                'overall':     avg_fn('overall'),
+                'org':         avg_fn('org'),
+                'venue':       avg_fn('venue'),
+                'engagement':  avg_fn('engagement'),
+                'nps':         _avg(ev_nps_vals),
+                'count':       len(matching),
+            })
+
+    # --- Qualitative quotes ---
+    quotes = []
+    for r in SURVEY_RESPONSES:
+        for field, label in [
+            ('keep_doing', 'Keep Doing'),
+            ('improve', 'Improve'),
+            ('open_feedback', 'Open Feedback'),
+        ]:
+            text = r.get(field, '').strip()
+            if text and len(text) > 10:
+                quotes.append({
+                    'text': text,
+                    'author': r['user_name'],
+                    'label': label
+                })
+
+    stats = {
+        'total_responses': len(sem_responses),
+        'event_responses': len(event_responses),
+        'avg_overall': avg_overall,
+        'avg_events': avg_events,
+        'avg_nps': avg_nps,
+        'sem_labels': SEMESTER_LABELS,
+        'overall_by_sem': overall_by_sem,
+        'events_by_sem': events_by_sem,
+        'comms_by_sem': comms_by_sem,
+        'team_by_sem': team_by_sem,
+        'budget_by_sem': budget_by_sem,
+        'rating_distribution': rating_distribution,
+        'semester_rows': semester_rows,
+        'event_feedback_list': event_feedback_list,
+        'quotes': quotes,
+    }
+
+    return render_template('stats.html', stats=stats, events=list(EVENTS.values()))
+
+
+# ==========================================
+# ADMIN: TRIGGER EVENT SURVEY
+# ==========================================
+
+@app.route('/stats/trigger_survey', methods=['POST'])
+@login_required
+def trigger_event_survey():
+    event_id = _safe_int(request.form.get('event_id'))
+    if event_id and event_id in EVENTS:
+        # Add this event to all active users' pending surveys
+        for uid in active_users:
+            if uid not in pending_event_surveys:
+                pending_event_surveys[uid] = []
+            if event_id not in pending_event_surveys[uid]:
+                pending_event_surveys[uid].append(event_id)
+        event_title = EVENTS[event_id]['title']
+        flash(f"📬 Post-event survey for '{event_title}' sent to all active members!", "success")
+    return redirect(url_for('stats_page'))
 
 
 # ==========================================
