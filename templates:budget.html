@@ -1,0 +1,80 @@
+import os
+from flask import Flask, render_template, jsonify, request
+
+app = Flask(__name__)
+app.secret_key = "stuco_griffin_secret"
+
+# Public Event Data
+CALENDAR_EVENTS = [
+    {
+        "id": 1,
+        "title": "Homecoming Dance 2026",
+        "date": "2026-10-24",
+        "display_date": "Saturday, October 24, 2026",
+        "time": "7:00 PM - 10:30 PM",
+        "location": "Main Gymnasium & Courtyard",
+        "category": "School Dance",
+        "description": "Join us for the 2026 Homecoming Dance as we celebrate our return to the main campus! Light refreshments, live DJ, photo booths, and royalty crowning.",
+        "schedule": [
+            {"time": "7:00 PM", "activity": "Doors Open & Photo Booths"},
+            {"time": "8:30 PM", "activity": "Royalty Crowning Ceremony"},
+            {"time": "9:30 PM", "activity": "Special Griffin Mascot Dance Off"},
+            {"time": "10:30 PM", "activity": "Event Concludes"}
+        ],
+        "ticket_link": "https://schooltickets.example.com/homecoming",
+        "ticket_status": "Tickets Available ($15)",
+        "rsvp_required": True,
+        "has_workspace": True
+    },
+    {
+        "id": 2,
+        "title": "Main Campus Welcome Pep Rally",
+        "date": "2026-08-28",
+        "display_date": "Friday, August 28, 2026",
+        "time": "1:30 PM - 3:00 PM",
+        "location": "Central Courtyard",
+        "category": "Spirit Rally",
+        "description": "Kickoff pep rally introducing all Stuco committees, school mascot performance, and live class competitions.",
+        "schedule": [
+            {"time": "1:30 PM", "activity": "Griffin Mascot Entrance & Marching Band"},
+            {"time": "2:00 PM", "activity": "Class Tug-of-War Competition"},
+            {"time": "2:45 PM", "activity": "Presidential Welcome Address & Free Popsicles"}
+        ],
+        "ticket_link": "",
+        "ticket_status": "Free Entry (No Ticket Required)",
+        "rsvp_required": False,
+        "has_workspace": True
+    },
+    {
+        "id": 3,
+        "title": "Fall Club Rush & Food Fair",
+        "date": "2026-09-15",
+        "display_date": "Tuesday, September 15, 2026",
+        "time": "12:00 PM - 2:00 PM",
+        "location": "Main Campus Plaza",
+        "category": "Fair",
+        "description": "Explore 30+ student organizations, sign up for campus committees, and enjoy food stalls managed by Stuco.",
+        "schedule": [
+            {"time": "12:00 PM", "activity": "Club Booths & Food Stalls Open"},
+            {"time": "1:00 PM", "activity": "Acoustic Stage Performances"}
+        ],
+        "ticket_link": "",
+        "ticket_status": "Free Entry",
+        "rsvp_required": False,
+        "has_workspace": True
+    }
+]
+
+@app.route('/calendar')
+def public_calendar():
+    return render_template('calendar.html', events=CALENDAR_EVENTS)
+
+@app.route('/api/events/<int:event_id>')
+def get_event_details(event_id):
+    event = next((e for e in CALENDAR_EVENTS if e['id'] == event_id), None)
+    if event:
+        return jsonify(event)
+    return jsonify({"error": "Event not found"}), 404
+
+if __name__ == '__main__':
+    app.run(debug=True)

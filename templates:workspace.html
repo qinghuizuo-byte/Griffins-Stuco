@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ event.title }} | Stuco Event Workspace</title>
+    <style>
+        :root {
+            --bg-main: #f0f6ff;
+            --primary: #0066cc;
+            --primary-light: #e6f0fa;
+            --primary-dark: #004488;
+            --accent: #2563eb;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+            --card-bg: #ffffff;
+            --border-color: #cbd5e1;
+            --status-todo: #fef3c7;
+            --status-todo-text: #92400e;
+            --status-progress: #dbeafe;
+            --status-progress-text: #1e40af;
+            --status-done: #dcfce7;
+            --status-done-text: #166534;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-dark);
+            padding: 24px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header Bar */
+        .navbar {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0, 102, 204, 0.08);
+            margin-bottom: 24px;
+            border-left: 6px solid var(--primary);
+        }
+
+        .brand-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+        }
+
+        .griffin-badge {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        /* Page Title Grid */
+        .workspace-header {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+        }
+
+        .workspace-header h1 {
+            font-size: 1.8rem;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .event-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 12px;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Content Layout */
+        .grid-layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 24px;
+        }
+
+        @media (max-width: 900px) {
+            .grid-layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Card Component */
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+            border: 1px solid #e2e8f0;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 10px;
+        }
+
+        .card-title {
+            font-size: 1.2rem;
+            color: var(--primary-dark);
+            font-weight: 700;
+        }
+
+        /* Form Inputs */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: var(--text-dark);
+        }
+
+        input[type="text"], input[type="date"], select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9rem;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
+        }
+
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 18px;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+
+        .btn:hover {
+            background-color: var(--primary-dark);
+        }
+
+        .btn-sm {
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        /* Task Table */
+        .task-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+        }
+
+        .task-table th, .task-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        .task-table th {
+            background-color: var(--primary-light);
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .status-To-Do { background: var(--status-todo); color: var(--status-todo-text); }
+        .status-In-Progress { background: var(--status-progress); color: var(--status-progress-text); }
+        .status-Completed { background: var(--status-done); color: var(--status-done-text); }
+
+        /* Gallery Grid */
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .photo-card {
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .photo-info {
+            padding: 8px;
+            font-size: 0.8rem;
+        }
+
+        .photo-caption {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+
+        .photo-category {
+            color: var(--text-muted);
+            font-size: 0.75rem;
+        }
+
+        .alert {
+            padding: 12px 16px;
+            background: #d1e7dd;
+            color: #0f5132;
+            border-radius: 6px;
+            margin-bottom: 16px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Navbar Header -->
+    <div class="navbar">
+        <div class="brand-title">
+            🦅 Stuco Workspace
+        </div>
+        <div class="griffin-badge">Main Campus • Griffin Pride</div>
+    </div>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Event Header Overview -->
+    <div class="workspace-header">
+        <h1>{{ event.title }}</h1>
+        <p>{{ event.description }}</p>
+        <div class="event-meta">
+            <div class="meta-item">📅 <strong>Date:</strong> {{ event.date }}</div>
+            <div class="meta-item">📍 <strong>Venue:</strong> {{ event.location }}</div>
+            <div class="meta-item">👤 <strong>Event Lead:</strong> {{ event.lead }}</div>
+            <div class="meta-item">💵 <strong>Budget:</strong> {{ event.budget_allocated }}</div>
+        </div>
+    </div>
+
+    <!-- Main Workspace Layout -->
+    <div class="grid-layout">
+        
+        <!-- Left Column: Tasks & Action Items -->
+        <div class="left-col">
+            
+            <!-- Interactive Task List Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Event To-Do List</span>
+                </div>
+
+                <table class="task-table">
+                    <thead>
+                        <tr>
+                            <th>Task</th>
+                            <th>Committee</th>
+                            <th>Assignee</th>
+                            <th>Due Date</th>
+                            <th>Status</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for task in event.tasks %}
+                        <tr>
+                            <td><strong>{{ task.title }}</strong></td>
+                            <td>{{ task.committee }}</td>
+                            <td>{{ task.assignee }}</td>
+                            <td>{{ task.due_date }}</td>
+                            <td>
+                                <span class="status-badge status-{{ task.status.replace(' ', '-') }}">
+                                    {{ task.status }}
+                                </span>
+                            </td>
+                            <td>
+                                <form action="{{ url_for('toggle_task', event_id=event.id, task_id=task.id) }}" method="POST">
+                                    <button type="submit" class="btn btn-sm">Advance</button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Add Task Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Add New Task</span>
+                </div>
+                <form action="{{ url_for('add_task', event_id=event.id) }}" method="POST">
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label>Task Title</label>
+                            <input type="text" name="title" placeholder="e.g. Order Griffin Balloons" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Committee</label>
+                            <select name="committee">
+                                <option value="Logistics">Logistics</option>
+                                <option value="Public Relations">Public Relations</option>
+                                <option value="Decor & Spirit">Decor & Spirit</option>
+                                <option value="Executive">Executive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label>Assignee</label>
+                            <input type="text" name="assignee" placeholder="e.g. Taylor S.">
+                        </div>
+                        <div class="form-group">
+                            <label>Due Date</label>
+                            <input type="date" name="due_date">
+                        </div>
+                    </div>
+                    <button type="submit" class="btn" style="margin-top: 8px;">Add Task to Board</button>
+                </form>
+            </div>
+
+        </div>
+
+        <!-- Right Column: Venue Photos & Inspiration Upload -->
+        <div class="right-col">
+            
+            <!-- Upload Card -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Upload Photo / Layout</span>
+                </div>
+                <form action="{{ url_for('upload_photo', event_id=event.id) }}" method="POST" enctype="multipart/form-data">
+                    <div class="form-group">
+                        <label>Select Image File</label>
+                        <input type="file" name="file" accept="image/*" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Caption / Note</label>
+                        <input type="text" name="caption" placeholder="e.g. Stage placement layout">
+                    </div>
+                    <div class="form-group">
+                        <label>Category</label>
+                        <select name="category">
+                            <option value="Venue">Venue Photo</option>
+                            <option value="Decor">Decor Idea</option>
+                            <option value="Item to Buy">Item to Buy</option>
+                            <option value="Floorplan">Floorplan / Map</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%; margin-top: 8px;">Upload Image</button>
+                </form>
+            </div>
+
+            <!-- Uploaded Photos Gallery -->
+            <div class="card">
+                <div class="card-header">
+                    <span class="card-title">Gallery & Attachments</span>
+                </div>
+                
+                <div class="photo-grid">
+                    {% for photo in event.photos %}
+                    <div class="photo-card">
+                        <img src="{{ url_for('static', filename='uploads/' + photo.filename) }}" alt="{{ photo.caption }}" onerror="this.src='https://via.placeholder.com/180x120?text=Venue+Photo';">
+                        <div class="photo-info">
+                            <div class="photo-caption">{{ photo.caption }}</div>
+                            <div class="photo-category">{{ photo.category }}</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+</body>
+</html>

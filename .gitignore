@@ -1,0 +1,7 @@
+*.pyc
+__pycache__/
+static/uploads/*
+.env
+.DS_Store
+.idea/
+*.log

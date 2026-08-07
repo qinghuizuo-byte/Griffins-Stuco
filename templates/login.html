@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | Stuco Student Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #004488;
+            --primary-light: #e6f0fa;
+            --bg: #f0f6ff;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --error-bg: #fee2e2;
+            --error-text: #991b1b;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: linear-gradient(135deg, #0066cc 0%, #004488 50%, #001a44 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Decorative background elements */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(255,255,255,0.06) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+        body::after {
+            content: '';
+            position: fixed;
+            bottom: -30%;
+            left: -10%;
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(255,255,255,0.04) 0%, transparent 70%);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .login-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            max-width: 900px;
+            width: 100%;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.35);
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 700px) {
+            .login-wrapper { grid-template-columns: 1fr; }
+            .brand-panel { display: none; }
+        }
+
+        /* Left Branding Panel */
+        .brand-panel {
+            background: linear-gradient(160deg, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.04) 100%);
+            backdrop-filter: blur(10px);
+            padding: 48px 36px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid rgba(255,255,255,0.15);
+        }
+
+        .brand-top .griffin {
+            font-size: 4rem;
+            margin-bottom: 16px;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
+
+        .brand-top h1 {
+            font-size: 1.9rem;
+            font-weight: 900;
+            color: #ffffff;
+            line-height: 1.2;
+            margin-bottom: 12px;
+        }
+
+        .brand-top p {
+            font-size: 0.92rem;
+            color: rgba(255,255,255,0.75);
+            line-height: 1.6;
+        }
+
+        .brand-features {
+            list-style: none;
+            margin-top: 32px;
+        }
+
+        .brand-features li {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.88rem;
+            color: rgba(255,255,255,0.82);
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .brand-features li:last-child { border-bottom: none; }
+
+        .feature-icon {
+            width: 28px;
+            height: 28px;
+            background: rgba(255,255,255,0.15);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .brand-bottom {
+            font-size: 0.78rem;
+            color: rgba(255,255,255,0.5);
+        }
+
+        /* Right Login Card */
+        .login-card {
+            background: #ffffff;
+            padding: 52px 44px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .login-header {
+            margin-bottom: 36px;
+        }
+
+        .login-header h2 {
+            font-size: 1.7rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .login-header p {
+            font-size: 0.9rem;
+            color: var(--muted);
+            line-height: 1.5;
+        }
+
+        .google-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            width: 100%;
+            padding: 14px 20px;
+            background: #ffffff;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text);
+            text-decoration: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            margin-bottom: 20px;
+        }
+
+        .google-btn:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+            color: var(--primary-dark);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(0,102,204,0.15);
+        }
+
+        .google-logo {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 4px 0 20px 0;
+            color: var(--muted);
+            font-size: 0.82rem;
+        }
+        .divider::before, .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+
+        .school-note {
+            background: var(--primary-light);
+            border: 1px solid #bfdbfe;
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 0.85rem;
+            color: var(--primary-dark);
+            line-height: 1.5;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .school-note .icon { font-size: 1rem; flex-shrink: 0; margin-top: 1px; }
+
+        .error-box {
+            background: var(--error-bg);
+            border: 1px solid #fecaca;
+            border-radius: 10px;
+            padding: 14px 16px;
+            font-size: 0.85rem;
+            color: var(--error-text);
+            margin-bottom: 20px;
+            display: flex;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .login-footer {
+            margin-top: 32px;
+            font-size: 0.78rem;
+            color: var(--muted);
+            text-align: center;
+            line-height: 1.6;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+    <!-- Left Branding Panel -->
+    <div class="brand-panel">
+        <div class="brand-top">
+            <div class="griffin">🦅</div>
+            <h1>Student Council Portal</h1>
+            <p>The official digital hub for BJSMIC Student Government — Main Campus 2026.</p>
+
+            <ul class="brand-features">
+                <li><div class="feature-icon">📅</div> Events Calendar & Ticket Booking</li>
+                <li><div class="feature-icon">📋</div> Meeting Agendas & Minutes</li>
+                <li><div class="feature-icon">💳</div> Budget Requests & Treasurer Portal</li>
+                <li><div class="feature-icon">🥤</div> Vending Machine Suggestion Box</li>
+                <li><div class="feature-icon">✅</div> Event Workspace & Task Boards</li>
+            </ul>
+        </div>
+        <div class="brand-bottom">
+            BJSMIC Student Council &nbsp;•&nbsp; Griffin Pride 2026
+        </div>
+    </div>
+
+    <!-- Right Login Card -->
+    <div class="login-card">
+        <div class="login-header">
+            <h2>Welcome back 👋</h2>
+            <p>Sign in with your BJSMIC school account to access the Student Council portal.</p>
+        </div>
+
+        {% if error %}
+        <div class="error-box">
+            <span class="icon">⚠️</span>
+            <div>{{ error }}</div>
+        </div>
+        {% endif %}
+
+        <a href="{{ url_for('google_login') }}" class="google-btn" id="google-signin-btn">
+            <!-- Google Logo SVG -->
+            <svg class="google-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+            </svg>
+            Sign in with Google School Account
+        </a>
+
+        <div class="divider">school accounts only</div>
+
+        <div class="school-note">
+            <span class="icon">🏫</span>
+            <div>
+                <strong>BJSMIC students & staff only.</strong><br>
+                You must sign in with your <strong>@bjsmicschool.com</strong> Google account.
+                Personal Gmail accounts will be declined.
+            </div>
+        </div>
+
+        <div class="login-footer">
+            Having trouble? Contact your Stuco advisor or email<br>
+            <strong>president@stuco.school.edu</strong>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
