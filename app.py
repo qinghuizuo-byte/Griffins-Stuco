@@ -1,7 +1,11 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from werkzeug.utils import secure_filename
-from authlib.integrations.flask_client import OAuth
+try:
+    from authlib.integrations.flask_client import OAuth
+except Exception:
+    OAuth = None
+
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -41,7 +45,6 @@ except Exception:
     pass
 
 
-
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
@@ -50,16 +53,22 @@ def allowed_file(filename):
 # GOOGLE OAUTH SETUP
 # ==========================================
 
-oauth = OAuth(app)
-google = oauth.register(
-    name='google',
-    client_id=app.config['GOOGLE_CLIENT_ID'],
-    client_secret=app.config['GOOGLE_CLIENT_SECRET'],
-    server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
-    client_kwargs={
-        'scope': 'openid email profile',
-    }
-)
+google = None
+if OAuth:
+    try:
+        oauth = OAuth(app)
+        if app.config['GOOGLE_CLIENT_ID'] and app.config['GOOGLE_CLIENT_SECRET']:
+            google = oauth.register(
+                name='google',
+                client_id=app.config['GOOGLE_CLIENT_ID'],
+                client_secret=app.config['GOOGLE_CLIENT_SECRET'],
+                server_metadata_url='https://accounts.google.com/.well-known/openid-configuration',
+                client_kwargs={
+                    'scope': 'openid email profile',
+                }
+            )
+    except Exception:
+        google = None
 
 
 # ==========================================
