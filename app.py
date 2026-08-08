@@ -4,7 +4,11 @@ from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
-app = Flask(__name__, template_folder='templates', static_folder='static')
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+template_dir = os.path.join(BASE_DIR, 'templates')
+static_dir = os.path.join(BASE_DIR, 'static')
+
+app = Flask(__name__, template_folder=template_dir, static_folder=static_dir)
 
 # ==========================================
 # CONFIGURATION
@@ -12,7 +16,11 @@ app = Flask(__name__, template_folder='templates', static_folder='static')
 
 app.secret_key = os.environ.get("SECRET_KEY", "stuco_griffin_dev_secret_2026_change_in_prod")
 
-UPLOAD_FOLDER = os.path.join('static', 'uploads')
+if os.environ.get("VERCEL"):
+    UPLOAD_FOLDER = os.path.join('/tmp', 'uploads')
+else:
+    UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
+
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf', 'doc', 'docx', 'txt'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16 MB max upload
@@ -27,7 +35,10 @@ ALLOWED_DOMAIN = "bjsmicschool.com"
 # Dev mode: auto-enabled when Google OAuth is not configured
 DEV_MODE = not (os.environ.get("GOOGLE_CLIENT_ID") and os.environ.get("GOOGLE_CLIENT_SECRET"))
 
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+try:
+    os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+except Exception:
+    pass
 
 
 
@@ -1739,6 +1750,8 @@ def decline_volunteer(op_id, email):
 # ==========================================
 # SERVER INITIATION
 # ==========================================
+
+handler = app
 
 if __name__ == '__main__':
     app.run(debug=True, port=5001)
