@@ -1,7 +1,11 @@
 import sys
 import os
 
-# Append project root to sys.path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if BASE_DIR not in sys.path:
+    sys.path.insert(0, BASE_DIR)
 
+from app import app as application
 from app import app
+
+handler = app
