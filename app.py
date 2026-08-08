@@ -57,7 +57,7 @@ google = oauth.register(
 
 # Directory of roles and permissions (editable in the admin panel)
 ACCOUNTS = {
-    "president@bjsmicschool.com": {"name": "Cellestine", "role": "President", "can_edit_updates": True},
+    "270036@bjsmicschool.com": {"name": "Cellestine", "role": "President", "can_edit_updates": True},
     "vice@bjsmicschool.com": {"name": "Alex M.", "role": "Vice President", "can_edit_updates": True},
     "member@bjsmicschool.com": {"name": "Jordan K.", "role": "Stuco Member", "can_edit_updates": False},
     "student@bjsmicschool.com": {"name": "Sam V.", "role": "Student", "can_edit_updates": False},
