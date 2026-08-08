@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
-app = Flask(__name__, template_folder='.', static_folder='static')
+app = Flask(__name__, template_folder='templates', static_folder='static')
 
 # ==========================================
 # CONFIGURATION
