@@ -65,7 +65,7 @@
         .workspace-header p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
         .event-meta {
             display: flex; flex-wrap: wrap; gap: 20px; color: var(--text-muted); font-size: 0.88rem; margin-top: 14px;
-            padding-top: 12px; border-top: 1px solid #f1f5f9;
+            padding-top: 12px; border-top: 1px solid #f1f5f9; align-items: center;
         }
 
         .grid-layout { display: grid; grid-template-columns: 3fr 1fr; gap: 24px; }
@@ -123,6 +123,10 @@
         .status-In-Progress { background: var(--status-progress); color: var(--status-progress-text); }
         .status-Completed { background: var(--status-done); color: var(--status-done-text); }
 
+        .status-Signed-Up { background: #fef3c7; color: #92400e; }
+        .status-Paid { background: #dcfce7; color: #166534; }
+        .status-Confirmed { background: #dbeafe; color: #1e40af; }
+
         /* Modals */
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -178,6 +182,7 @@
             <a href="/" class="nav-link">Home</a>
             <a href="/calendar" class="nav-link">Calendar</a>
             <a href="/meetings" class="nav-link">Meetings</a>
+            <a href="/budget" class="nav-link">Treasurer Portal</a>
             <a href="/updates" class="nav-link">Updates</a>
             <a href="/volunteers" class="nav-link">Volunteers</a>
             <a href="/stats" class="nav-link">Statistics</a>
@@ -208,7 +213,11 @@
             <div>📅 <strong>Date:</strong> {{ event.display_date }}</div>
             <div>📍 <strong>Venue:</strong> {{ event.location }}</div>
             <div>👤 <strong>Event Lead:</strong> {{ event.lead }}</div>
-            <div>💵 <strong>Allocated Budget:</strong> {{ event.budget_allocated }}</div>
+            <div>💴 <strong>Allocated Budget:</strong> {{ event.budget_allocated }}
+                {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Teacher'] %}
+                <button class="btn btn-outline" style="padding: 2px 8px; font-size: 0.75rem; margin-left: 6px;" onclick="openEditBudgetModal()">✏️ Edit Budget Limit</button>
+                {% endif %}
+            </div>
         </div>
     </div>
 
@@ -288,15 +297,15 @@
                 <div class="budget-summary-grid">
                     <div class="budget-stat-box">
                         <div class="budget-stat-label">Total Allocated</div>
-                        <div class="budget-stat-value">${{ "%.2f"|format(total_budget) }}</div>
+                        <div class="budget-stat-value">¥{{ "%.2f"|format(total_budget) }}</div>
                     </div>
                     <div class="budget-stat-box">
                         <div class="budget-stat-label">Total Spent</div>
-                        <div class="budget-stat-value" style="color: var(--danger);">${{ "%.2f"|format(total_spent) }}</div>
+                        <div class="budget-stat-value" style="color: var(--danger);">¥{{ "%.2f"|format(total_spent) }}</div>
                     </div>
                     <div class="budget-stat-box">
                         <div class="budget-stat-label">Remaining Budget</div>
-                        <div class="budget-stat-value" style="color: var(--success);">${{ "%.2f"|format(remaining_budget) }}</div>
+                        <div class="budget-stat-value" style="color: var(--success);">¥{{ "%.2f"|format(remaining_budget) }}</div>
                     </div>
                 </div>
 
@@ -305,7 +314,7 @@
                         <thead>
                             <tr>
                                 <th>Item Purchased</th>
-                                <th style="width: 100px;">Cost ($)</th>
+                                <th style="width: 110px;">Cost (¥)</th>
                                 <th style="width: 120px;">Purchaser</th>
                                 <th style="width: 110px;">Date</th>
                                 <th>Notes / Receipt</th>
@@ -318,7 +327,7 @@
                             {% for p in event.purchases %}
                             <tr>
                                 <td style="font-weight: 700; color: var(--primary-dark);">{{ p.item }}</td>
-                                <td style="font-weight: 800; color: var(--danger);">${{ "%.2f"|format(p.cost) }}</td>
+                                <td style="font-weight: 800; color: var(--danger);">¥{{ "%.2f"|format(p.cost) }}</td>
                                 <td>{{ p.buyer }}</td>
                                 <td>{{ p.date }}</td>
                                 <td style="font-style: italic; color: var(--text-muted);">{{ p.notes }}</td>
@@ -358,7 +367,7 @@
                                 <th>Student Name</th>
                                 <th>Grade</th>
                                 <th>Email</th>
-                                <th>Booking Status</th>
+                                <th>Booking Stage</th>
                                 {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'] %}
                                 <th style="width: 90px; text-align: center;">Action</th>
                                 {% endif %}
@@ -371,7 +380,7 @@
                                 <td>Grade {{ part.grade }}</td>
                                 <td>{{ part.email }}</td>
                                 <td>
-                                    <span class="status-badge {% if part.status == 'Confirmed' %}status-Completed{% else %}status-To-Do{% endif %}">
+                                    <span class="status-badge status-{{ part.status.replace(' ', '-') }}">
                                         {{ part.status }}
                                     </span>
                                 </td>
@@ -454,6 +463,25 @@
             </div>
         </div>
 
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: EDIT BUDGET LIMIT -->
+<!-- ========================================== -->
+<div class="modal" id="editBudgetModal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; margin-bottom:18px;">
+            <h3 style="font-weight:800; color:var(--primary-dark);">Edit Event Budget Limit</h3>
+            <button onclick="closeEditBudgetModal()" style="font-size:1.5rem; background:none; border:none; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        <form action="{{ url_for('edit_event_budget', event_id=event.id) }}" method="POST">
+            <div class="form-group">
+                <label>Allocated Budget Amount (RMB ¥)</label>
+                <input type="text" name="budget_allocated" value="{{ event.budget_allocated }}" placeholder="e.g. ¥2,500.00" required>
+            </div>
+            <button type="submit" class="btn" style="width:100%; margin-top:8px;">Save Budget Limit</button>
+        </form>
     </div>
 </div>
 
@@ -558,7 +586,7 @@
                 <input type="text" name="item" placeholder="e.g. Sound System Speakers" required>
             </div>
             <div class="form-group">
-                <label>Cost Amount ($)</label>
+                <label>Cost Amount (¥)</label>
                 <input type="number" step="0.01" name="cost" placeholder="e.g. 150.00" required>
             </div>
             <div class="form-group">
@@ -571,7 +599,7 @@
             </div>
             <div class="form-group">
                 <label>Notes / Receipt Info</label>
-                <input type="text" name="notes" placeholder="e.g. Purchased from Walmart, receipt attached">
+                <input type="text" name="notes" placeholder="e.g. Purchased from store, receipt attached">
             </div>
             <button type="submit" class="btn btn-success" style="width:100%; margin-top:8px;">Save Purchased Item</button>
         </form>
@@ -601,11 +629,11 @@
                 <input type="email" name="email" placeholder="e.g. student@bjsmicschool.com" required>
             </div>
             <div class="form-group">
-                <label>Booking Status</label>
+                <label>Booking Stage</label>
                 <select name="status">
+                    <option value="Signed Up">Signed Up</option>
+                    <option value="Paid">Paid</option>
                     <option value="Confirmed">Confirmed</option>
-                    <option value="Pending">Pending Payment</option>
-                    <option value="Waitlisted">Waitlisted</option>
                 </select>
             </div>
             <button type="submit" class="btn" style="width:100%; margin-top:8px;">Add Participant</button>
@@ -636,11 +664,11 @@
                 <input type="email" name="email" id="edit_part_email" required>
             </div>
             <div class="form-group">
-                <label>Booking Status</label>
+                <label>Booking Stage</label>
                 <select name="status" id="edit_part_status">
+                    <option value="Signed Up">Signed Up</option>
+                    <option value="Paid">Paid</option>
                     <option value="Confirmed">Confirmed</option>
-                    <option value="Pending">Pending Payment</option>
-                    <option value="Waitlisted">Waitlisted</option>
                 </select>
             </div>
             <button type="submit" class="btn" style="width:100%; margin-top:8px;">Save Participant Changes</button>
@@ -649,6 +677,9 @@
 </div>
 
 <script>
+    function openEditBudgetModal() { document.getElementById('editBudgetModal').classList.add('active'); }
+    function closeEditBudgetModal() { document.getElementById('editBudgetModal').classList.remove('active'); }
+
     function openAddRowModal() { document.getElementById('addRowModal').classList.add('active'); }
     function closeAddRowModal() { document.getElementById('addRowModal').classList.remove('active'); }
 

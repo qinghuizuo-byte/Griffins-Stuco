@@ -1,4 +1,5 @@
 import os
+import json
 from flask import Flask, render_template, request, redirect, url_for, flash, jsonify, session
 from werkzeug.utils import secure_filename
 try:
@@ -589,6 +590,57 @@ VENDING_SUGGESTIONS = [
 
 
 # ==========================================
+# DATA PERSISTENCE (JSON BACKING STORE)
+# ==========================================
+
+DATA_DIR = os.path.join('/tmp', 'data') if os.environ.get("VERCEL") else os.path.join(BASE_DIR, 'data')
+try:
+    os.makedirs(DATA_DIR, exist_ok=True)
+except Exception:
+    pass
+DATA_FILE = os.path.join(DATA_DIR, 'store.json')
+
+def save_data():
+    try:
+        store = {
+            "ACCOUNTS": ACCOUNTS,
+            "STUCO_MEMBERS": STUCO_MEMBERS,
+            "EVENTS": EVENTS,
+            "MEETINGS": MEETINGS,
+            "ANNOUNCEMENTS": ANNOUNCEMENTS,
+            "BUDGET_REQUESTS": BUDGET_REQUESTS,
+            "VENDING_ITEMS": VENDING_ITEMS,
+            "VENDING_SUGGESTIONS": VENDING_SUGGESTIONS,
+            "VOLUNTEER_OPPORTUNITIES": VOLUNTEER_OPPORTUNITIES
+        }
+        with open(DATA_FILE, 'w', encoding='utf-8') as f:
+            json.dump(store, f, ensure_ascii=False, indent=2)
+    except Exception as e:
+        print(f"Error saving data: {e}")
+
+def load_data():
+    global ACCOUNTS, STUCO_MEMBERS, EVENTS, MEETINGS, ANNOUNCEMENTS, BUDGET_REQUESTS, VENDING_ITEMS, VENDING_SUGGESTIONS, VOLUNTEER_OPPORTUNITIES
+    if os.path.exists(DATA_FILE):
+        try:
+            with open(DATA_FILE, 'r', encoding='utf-8') as f:
+                store = json.load(f)
+                if "ACCOUNTS" in store: ACCOUNTS = store["ACCOUNTS"]
+                if "STUCO_MEMBERS" in store: STUCO_MEMBERS = store["STUCO_MEMBERS"]
+                if "EVENTS" in store:
+                    EVENTS = {int(k): v for k, v in store["EVENTS"].items()}
+                if "MEETINGS" in store: MEETINGS = store["MEETINGS"]
+                if "ANNOUNCEMENTS" in store: ANNOUNCEMENTS = store["ANNOUNCEMENTS"]
+                if "BUDGET_REQUESTS" in store: BUDGET_REQUESTS = store["BUDGET_REQUESTS"]
+                if "VENDING_ITEMS" in store: VENDING_ITEMS = store["VENDING_ITEMS"]
+                if "VENDING_SUGGESTIONS" in store: VENDING_SUGGESTIONS = store["VENDING_SUGGESTIONS"]
+                if "VOLUNTEER_OPPORTUNITIES" in store: VOLUNTEER_OPPORTUNITIES = store["VOLUNTEER_OPPORTUNITIES"]
+        except Exception as e:
+            print(f"Error loading data: {e}")
+
+load_data()
+
+
+# ==========================================
 # CONTEXT PROCESSOR — inject user into all templates
 # ==========================================
 
@@ -650,6 +702,20 @@ def event_workspace(event_id):
         total_spent=total_spent,
         remaining_budget=remaining_budget
     )
+
+
+@app.route('/workspace/<int:event_id>/edit_budget', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Teacher'])
+def edit_event_budget(event_id):
+    event = EVENTS.get(event_id)
+    if event:
+        val = request.form.get('budget_allocated', '').strip()
+        val_clean = val.replace('¥', '').replace('$', '').replace(',', '').strip()
+        event['budget_allocated'] = f"¥{val_clean}" if val_clean else "¥0.00"
+        save_data()
+        flash(f"Budget limit for '{event['title']}' updated to {event['budget_allocated']}!", "success")
+    return redirect(url_for('event_workspace', event_id=event_id))
 
 
 @app.route('/workspace/<int:event_id>/add_row', methods=['POST'])
@@ -1383,6 +1449,7 @@ def admin_update_user():
             active_user.name = ACCOUNTS[email]["name"]
             break
 
+    save_data()
     flash(f"Account for {email} updated successfully!", "success")
     return redirect(url_for('admin_page'))
 
@@ -1399,6 +1466,7 @@ def admin_delete_user():
             if active_user.email.lower() == email:
                 active_users.pop(user_id, None)
                 break
+        save_data()
         flash(f"Account {email} deleted successfully.", "success")
     return redirect(url_for('admin_page'))
 
@@ -1477,6 +1545,7 @@ def admin_edit_leader():
                 "can_edit_updates": acct_role in ["President", "Vice President", "Secretary", "Teacher"]
             }
 
+        save_data()
         flash(f"Leader profile for {name} updated successfully!", "success")
     return redirect(url_for('admin_page'))
 

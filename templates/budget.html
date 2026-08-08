@@ -63,7 +63,7 @@
 
         .events-budget-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
             gap: 20px;
             margin-bottom: 32px;
         }
@@ -171,15 +171,15 @@
     <!-- Overall Financial Overview -->
     <div class="summary-grid">
         <div class="summary-card">
-            <div class="summary-value">${{ "%.2f"|format(grand_total_allocated) }}</div>
+            <div class="summary-value">¥{{ "%.2f"|format(grand_total_allocated) }}</div>
             <div class="summary-label">Total Allocated Funds</div>
         </div>
         <div class="summary-card">
-            <div class="summary-value" style="color: var(--danger);">${{ "%.2f"|format(grand_total_spent) }}</div>
+            <div class="summary-value" style="color: var(--danger);">¥{{ "%.2f"|format(grand_total_spent) }}</div>
             <div class="summary-label">Total Spent Across Events</div>
         </div>
         <div class="summary-card">
-            <div class="summary-value" style="color: var(--success);">${{ "%.2f"|format(grand_remaining) }}</div>
+            <div class="summary-value" style="color: var(--success);">¥{{ "%.2f"|format(grand_remaining) }}</div>
             <div class="summary-label">Net Remaining Budget</div>
         </div>
     </div>
@@ -201,15 +201,15 @@
                 <div class="financial-breakdown">
                     <div>
                         <div class="fin-label">Allocated</div>
-                        <div class="fin-val" style="color: var(--primary-dark);">${{ "%.2f"|format(ev.total_budget) }}</div>
+                        <div class="fin-val" style="color: var(--primary-dark);">¥{{ "%.2f"|format(ev.total_budget) }}</div>
                     </div>
                     <div>
                         <div class="fin-label">Spent</div>
-                        <div class="fin-val" style="color: var(--danger);">${{ "%.2f"|format(ev.total_spent) }}</div>
+                        <div class="fin-val" style="color: var(--danger);">¥{{ "%.2f"|format(ev.total_spent) }}</div>
                     </div>
                     <div>
                         <div class="fin-label">Remains</div>
-                        <div class="fin-val" style="color: var(--success);">${{ "%.2f"|format(ev.remaining) }}</div>
+                        <div class="fin-val" style="color: var(--success);">¥{{ "%.2f"|format(ev.remaining) }}</div>
                     </div>
                 </div>
 
@@ -218,7 +218,7 @@
                     {% for p in ev.purchases[:3] %}
                     <div class="purchase-mini-item">
                         <span>🛒 {{ p.item }} ({{ p.buyer }})</span>
-                        <span style="font-weight: 700; color: var(--danger);">${{ "%.2f"|format(p.cost) }}</span>
+                        <span style="font-weight: 700; color: var(--danger);">¥{{ "%.2f"|format(p.cost) }}</span>
                     </div>
                     {% endfor %}
                     {% if not ev.purchases %}
