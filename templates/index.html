@@ -281,7 +281,11 @@
             <a href="/meetings" class="nav-link">Meetings Hub</a>
             <a href="/budget" class="nav-link">Treasurer Portal</a>
             <a href="/vending" class="nav-link">Vending Hub</a>
+            <a href="/updates" class="nav-link">Updates</a>
             <a href="/stats" class="nav-link">📊 Statistics</a>
+            {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher'] %}
+            <a href="/admin" class="nav-link" style="border:1.5px solid var(--primary);color:var(--primary);">⚙️ Admin</a>
+            {% endif %}
             <div class="user-pill">
                 <div class="user-avatar">
                     {% if current_user.picture %}
@@ -342,9 +346,12 @@
         
         <!-- Left Side: Announcement Feed -->
         <div>
-            <div class="section-title">📢 Latest Stuco Updates</div>
+            <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>📢 Latest Stuco Updates</span>
+                <a href="/updates" class="announcement-link" style="font-size:0.85rem;">View All News →</a>
+            </div>
             
-            {% for item in announcements %}
+            {% for item in announcements[:3] %}
             <div class="announcement-card">
                 <div class="announcement-header">
                     <span class="badge badge-{{ item.badge_color }}">{{ item.badge }}</span>
@@ -361,7 +368,12 @@
 
         <!-- Right Side: Stuco Name Cards / Roster -->
         <div>
-            <div class="section-title">👥 Meet Your Student Leaders</div>
+            <div class="section-title" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>👥 Meet Your Student Leaders</span>
+                {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher'] %}
+                <a href="/admin" class="announcement-link" style="font-size:0.85rem;color:var(--primary);">⚙️ Edit Profiles</a>
+                {% endif %}
+            </div>
             
             <div class="team-grid">
                 {% for member in members %}

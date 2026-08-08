@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ event.title }} | Stuco Event Workspace</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-main: #f0f6ff;
@@ -21,27 +22,15 @@
             --status-progress-text: #1e40af;
             --status-done: #dcfce7;
             --status-done-text: #166534;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
+        body { background-color: var(--bg-main); color: var(--text-dark); padding: 24px; }
+        .container { max-width: 1300px; margin: 0 auto; }
 
-        body {
-            background-color: var(--bg-main);
-            color: var(--text-dark);
-            padding: 24px;
-        }
-
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* Header Bar */
+        /* Navbar */
         .navbar {
             background: var(--card-bg);
             border-radius: 12px;
@@ -53,241 +42,132 @@
             margin-bottom: 24px;
             border-left: 6px solid var(--primary);
         }
-
-        .brand-title {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: var(--primary-dark);
+        .brand-title { font-size: 1.25rem; font-weight: 800; color: var(--primary-dark); }
+        .nav-links { display: flex; gap: 14px; align-items: center; }
+        .nav-link {
+            text-decoration: none; color: var(--text-dark); font-weight: 600; font-size: 0.88rem;
+            padding: 7px 14px; border-radius: 8px; transition: background 0.15s;
         }
+        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
 
-        .griffin-badge {
-            background: var(--primary-light);
-            color: var(--primary);
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-
-        /* Page Title Grid */
+        /* Workspace Header */
         .workspace-header {
             background: var(--card-bg);
             border-radius: 12px;
             padding: 24px;
             margin-bottom: 24px;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-        }
-
-        .workspace-header h1 {
-            font-size: 1.8rem;
-            color: var(--text-dark);
-            margin-bottom: 8px;
-        }
-
-        .event-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            color: var(--text-muted);
-            font-size: 0.95rem;
-            margin-top: 12px;
-        }
-
-        .meta-item {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        /* Content Layout */
-        .grid-layout {
-            display: grid;
-            grid-template-columns: 2fr 1fr;
-            gap: 24px;
-        }
-
-        @media (max-width: 900px) {
-            .grid-layout {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Card Component */
-        .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 20px 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
             border: 1px solid #e2e8f0;
         }
+        .workspace-header h1 { font-size: 1.8rem; color: var(--text-dark); font-weight: 800; margin-bottom: 8px; }
+        .workspace-header p { color: var(--text-muted); font-size: 0.95rem; line-height: 1.5; }
+        .event-meta {
+            display: flex; flex-wrap: wrap; gap: 20px; color: var(--text-muted); font-size: 0.88rem; margin-top: 14px;
+            padding-top: 12px; border-top: 1px solid #f1f5f9;
+        }
 
+        .grid-layout { display: grid; grid-template-columns: 3fr 1fr; gap: 24px; }
+        @media (max-width: 1000px) { .grid-layout { grid-template-columns: 1fr; } }
+
+        .card {
+            background: var(--card-bg); border-radius: 12px; padding: 24px; margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04); border: 1px solid #e2e8f0;
+        }
         .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 16px;
-            border-bottom: 2px solid var(--primary-light);
-            padding-bottom: 10px;
+            display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;
+            border-bottom: 2px solid var(--primary-light); padding-bottom: 10px;
         }
+        .card-title { font-size: 1.15rem; color: var(--primary-dark); font-weight: 800; }
 
-        .card-title {
-            font-size: 1.2rem;
-            color: var(--primary-dark);
-            font-weight: 700;
-        }
-
-        /* Form Inputs */
-        .form-group {
-            margin-bottom: 12px;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 4px;
-            color: var(--text-dark);
-        }
-
-        input[type="text"], input[type="date"], select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 0.9rem;
-            outline: none;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--primary);
-            box-shadow: 0 0 0 3px rgba(0, 102, 204, 0.15);
-        }
-
+        /* Buttons */
         .btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 18px;
-            border-radius: 6px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background 0.2s ease;
+            background-color: var(--primary); color: white; border: none; padding: 8px 16px;
+            border-radius: 6px; font-weight: 700; cursor: pointer; transition: background 0.2s;
+            font-size: 0.85rem; display: inline-flex; align-items: center; gap: 6px;
         }
+        .btn:hover { background-color: var(--primary-dark); }
+        .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
+        .btn-outline:hover { background: var(--primary-light); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-danger:hover { background-color: #dc2626; }
 
-        .btn:hover {
-            background-color: var(--primary-dark);
+        /* Spreadsheet-like Table */
+        .table-responsive { width: 100%; overflow-x: auto; border-radius: 8px; border: 1px solid var(--border-color); }
+        .sheet-table { width: 100%; border-collapse: collapse; text-align: left; font-size: 0.88rem; background: white; }
+        .sheet-table th {
+            background-color: #f1f5f9; color: #475569; font-weight: 700; padding: 12px;
+            font-size: 0.82rem; text-transform: uppercase; border-bottom: 2px solid var(--border-color);
         }
+        .sheet-table td { padding: 10px 12px; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+        .sheet-table tr:last-child td { border-bottom: none; }
+        .sheet-table tr:hover td { background-color: #f8fafc; }
 
-        .btn-sm {
-            padding: 5px 10px;
-            font-size: 0.8rem;
+        .sheet-input {
+            width: 100%; padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 4px;
+            font-family: inherit; font-size: 0.85rem; outline: none;
         }
-
-        /* Task Table */
-        .task-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 12px;
-        }
-
-        .task-table th, .task-table td {
-            padding: 12px;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-            font-size: 0.9rem;
-        }
-
-        .task-table th {
-            background-color: var(--primary-light);
-            color: var(--primary-dark);
-            font-weight: 600;
-        }
+        .sheet-input:focus { border-color: var(--primary); }
 
         .status-badge {
-            display: inline-block;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            text-transform: uppercase;
+            display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
         }
-
         .status-To-Do { background: var(--status-todo); color: var(--status-todo-text); }
         .status-In-Progress { background: var(--status-progress); color: var(--status-progress-text); }
         .status-Completed { background: var(--status-done); color: var(--status-done-text); }
 
+        /* Modals */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; border-radius: 12px; padding: 24px; width: 100%; max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 8px 10px; border: 1.5px solid var(--border-color); border-radius: 6px;
+            font-family: inherit; font-size: 0.88rem; outline: none;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+
         /* Gallery Grid */
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-            gap: 16px;
-            margin-top: 16px;
-        }
+        .photo-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 16px; margin-top: 14px; }
+        .photo-card { border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; background: #fff; }
+        .photo-card img { width: 100%; height: 120px; object-fit: cover; display: block; }
+        .photo-info { padding: 8px; font-size: 0.8rem; }
+        .photo-caption { font-weight: 600; color: var(--text-dark); }
+        .photo-category { color: var(--text-muted); font-size: 0.72rem; }
 
-        .photo-card {
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-            background: #fff;
-        }
-
-        .photo-card img {
-            width: 100%;
-            height: 120px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .photo-info {
-            padding: 8px;
-            font-size: 0.8rem;
-        }
-
-        .photo-caption {
-            font-weight: 600;
-            color: var(--text-dark);
-        }
-
-        .photo-category {
-            color: var(--text-muted);
-            font-size: 0.75rem;
-        }
-
-        .alert {
-            padding: 12px 16px;
-            background: #d1e7dd;
-            color: #0f5132;
-            border-radius: 6px;
-            margin-bottom: 16px;
-            font-size: 0.9rem;
-        }
+        .alert { padding: 12px 16px; background: #d1e7dd; color: #0f5132; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; }
     </style>
 </head>
 <body>
-
 <div class="container">
+
     <!-- Navbar Header -->
     <div class="navbar">
-        <div class="brand-title">
-            🦅 Stuco Workspace
-        </div>
-        <div style="display:flex;align-items:center;gap:12px;">
-            <div class="griffin-badge">Main Campus &bull; Griffin Pride</div>
+        <div class="brand-title">🦅 Stuco Event Workspace</div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/calendar" class="nav-link">Calendar</a>
+            <a href="/meetings" class="nav-link">Meetings</a>
+            <a href="/updates" class="nav-link">Updates</a>
+            <a href="/stats" class="nav-link">Statistics</a>
+            {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher'] %}
+            <a href="/admin" class="nav-link">Admin</a>
+            {% endif %}
             {% if current_user.is_authenticated %}
-            <a href="/calendar" style="font-size:0.85rem;font-weight:600;color:var(--primary);text-decoration:none;">← Calendar</a>
-            <a href="/logout" style="font-size:0.85rem;font-weight:600;color:#dc2626;text-decoration:none;">Sign out</a>
+            <a href="/logout" class="nav-link" style="color:var(--danger);">Sign out</a>
             {% else %}
-            <a href="/login" style="font-size:0.85rem;font-weight:700;color:white;background:var(--primary);padding:7px 16px;border-radius:8px;text-decoration:none;">🔑 Sign in to Edit</a>
+            <a href="/login" class="nav-link" style="background:var(--primary);color:white;">🔑 Sign In</a>
             {% endif %}
         </div>
     </div>
 
-
-    <!-- Flash Messages -->
     {% with messages = get_flashed_messages() %}
       {% if messages %}
         {% for message in messages %}
@@ -296,123 +176,90 @@
       {% endif %}
     {% endwith %}
 
-    <!-- Event Header Overview -->
+    <!-- Event Header -->
     <div class="workspace-header">
         <h1>{{ event.title }}</h1>
         <p>{{ event.description }}</p>
         <div class="event-meta">
-            <div class="meta-item">📅 <strong>Date:</strong> {{ event.date }}</div>
-            <div class="meta-item">📍 <strong>Venue:</strong> {{ event.location }}</div>
-            <div class="meta-item">👤 <strong>Event Lead:</strong> {{ event.lead }}</div>
-            <div class="meta-item">💵 <strong>Budget:</strong> {{ event.budget_allocated }}</div>
+            <div>📅 <strong>Date:</strong> {{ event.display_date }}</div>
+            <div>📍 <strong>Venue:</strong> {{ event.location }}</div>
+            <div>👤 <strong>Event Lead:</strong> {{ event.lead }}</div>
+            <div>💵 <strong>Budget:</strong> {{ event.budget_allocated }}</div>
         </div>
     </div>
 
-    <!-- Main Workspace Layout -->
+    <!-- Layout Grid -->
     <div class="grid-layout">
         
-        <!-- Left Column: Tasks & Action Items -->
-        <div class="left-col">
-            
-            <!-- Interactive Task List Card -->
+        <!-- Left: Interactive Spreadsheet Sheet -->
+        <div>
             <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Event To-Do List</span>
+                <div class="card-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <span class="card-title">📋 Timeline Planning Sheet</span>
+                    {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'] %}
+                    <button class="btn" onclick="openAddRowModal()">➕ Add Timeline Row</button>
+                    {% endif %}
                 </div>
 
-                <table class="task-table">
-                    <thead>
-                        <tr>
-                            <th>Task</th>
-                            <th>Committee</th>
-                            <th>Assignee</th>
-                            <th>Due Date</th>
-                            <th>Status</th>
-                            <th>Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for task in event.tasks %}
-                        <tr>
-                            <td><strong>{{ task.title }}</strong></td>
-                            <td>{{ task.committee }}</td>
-                            <td>{{ task.assignee }}</td>
-                            <td>{{ task.due_date }}</td>
-                            <td>
-                                <span class="status-badge status-{{ task.status.replace(' ', '-') }}">
-                                    {{ task.status }}
-                                </span>
-                            </td>
-                            <td>
-                                {% if current_user.is_authenticated %}
-                                <form action="{{ url_for('toggle_task', event_id=event.id, task_id=task.id) }}" method="POST">
-                                    <button type="submit" class="btn btn-sm">Advance</button>
-                                </form>
-                                {% else %}
-                                <a href="/login" style="font-size:0.78rem;color:var(--primary);font-weight:600;">🔒 Sign in</a>
+                <div class="table-responsive">
+                    <table class="sheet-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 110px;">Date/Timeline</th>
+                                <th style="width: 160px;">Task</th>
+                                <th style="width: 110px;">Assignee</th>
+                                <th>Details</th>
+                                <th>Notes</th>
+                                <th style="width: 110px;">Status</th>
+                                {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'] %}
+                                <th style="width: 120px; text-align: center;">Action</th>
                                 {% endif %}
-                            </td>
-                        </tr>
-                        {% endfor %}
-
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Add Task Card -->
-            <div class="card">
-                <div class="card-header">
-                    <span class="card-title">Add New Task</span>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for r in event.tasks %}
+                            <tr>
+                                <td><strong>{{ r.date }}</strong></td>
+                                <td style="font-weight: 600; color: var(--primary-dark);">{{ r.task }}</td>
+                                <td><span style="font-weight:600; color:#475569;">{{ r.assignee }}</span></td>
+                                <td>{{ r.details }}</td>
+                                <td style="font-style: italic; color: var(--text-muted);">{{ r.notes }}</td>
+                                <td>
+                                    <span class="status-badge status-{{ r.status.replace(' ', '-') }}">
+                                        {{ r.status }}
+                                    </span>
+                                </td>
+                                {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'] %}
+                                <td style="text-align: center;">
+                                    <div style="display:flex; gap:6px; justify-content:center;">
+                                        <button class="btn btn-outline" style="padding: 4px 8px; font-size: 0.75rem;" onclick='openEditRowModal({{ r | tojson | safe }})'>Edit</button>
+                                        <form action="{{ url_for('delete_workspace_row', event_id=event.id, row_id=r.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this row?');">
+                                            <button type="submit" class="btn btn-danger" style="padding: 4px 8px; font-size: 0.75rem; color: white;">Del</button>
+                                        </form>
+                                    </div>
+                                </td>
+                                {% endif %}
+                            </tr>
+                            {% endfor %}
+                            {% if not event.tasks %}
+                            <tr>
+                                <td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">No timeline rows added yet.</td>
+                            </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
                 </div>
-                {% if current_user.is_authenticated %}
-                <form action="{{ url_for('add_task', event_id=event.id) }}" method="POST">
-                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
-                        <div class="form-group">
-                            <label>Task Title</label>
-                            <input type="text" name="title" placeholder="e.g. Order Griffin Balloons" required>
-                        </div>
-                        <div class="form-group">
-                            <label>Committee</label>
-                            <select name="committee">
-                                <option value="Logistics">Logistics</option>
-                                <option value="Public Relations">Public Relations</option>
-                                <option value="Decor & Spirit">Decor & Spirit</option>
-                                <option value="Executive">Executive</option>
-                            </select>
-                        </div>
-                    </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
-                        <div class="form-group">
-                            <label>Assignee</label>
-                            <input type="text" name="assignee" placeholder="e.g. Taylor S.">
-                        </div>
-                        <div class="form-group">
-                            <label>Due Date</label>
-                            <input type="date" name="due_date">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn" style="margin-top: 8px;">Add Task to Board</button>
-                </form>
-                {% else %}
-                <div style="text-align:center;padding:24px 16px;">
-                    <div style="font-size:2rem;margin-bottom:10px;">🔒</div>
-                    <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:14px;">Sign in to add or manage tasks.</p>
-                    <a href="/login" style="background:var(--primary);color:white;padding:9px 20px;border-radius:8px;font-weight:700;text-decoration:none;font-size:0.88rem;">🔑 Sign In</a>
-                </div>
-                {% endif %}
             </div>
-
         </div>
 
-        <!-- Right Column: Venue Photos & Inspiration Upload -->
-        <div class="right-col">
-            
+        <!-- Right: Photo gallery and attachments -->
+        <div>
             <!-- Upload Card -->
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">Upload Photo / Layout</span>
+                    <span class="card-title">Upload Design/Layout</span>
                 </div>
-                {% if current_user.is_authenticated %}
+                {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'] %}
                 <form action="{{ url_for('upload_photo', event_id=event.id) }}" method="POST" enctype="multipart/form-data">
                     <div class="form-group">
                         <label>Select Image File</label>
@@ -434,21 +281,17 @@
                     <button type="submit" class="btn" style="width: 100%; margin-top: 8px;">Upload Image</button>
                 </form>
                 {% else %}
-                <div style="text-align:center;padding:24px 16px;">
-                    <div style="font-size:2rem;margin-bottom:10px;">🔒</div>
-                    <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:14px;">Sign in to upload photos and venue layouts.</p>
-                    <a href="/login" style="background:var(--primary);color:white;padding:9px 20px;border-radius:8px;font-weight:700;text-decoration:none;font-size:0.88rem;">🔑 Sign In</a>
+                <div style="text-align:center;padding:12px 8px;">
+                    <p style="font-size:0.82rem;color:var(--text-muted);">🔒 <a href="/login" style="color:var(--primary);font-weight:700;">Sign in</a> to upload venue layouts and photos.</p>
                 </div>
                 {% endif %}
             </div>
 
-
-            <!-- Uploaded Photos Gallery -->
+            <!-- Gallery -->
             <div class="card">
                 <div class="card-header">
-                    <span class="card-title">Gallery & Attachments</span>
+                    <span class="card-title">Workspace Gallery</span>
                 </div>
-                
                 <div class="photo-grid">
                     {% for photo in event.photos %}
                     <div class="photo-card">
@@ -461,11 +304,113 @@
                     {% endfor %}
                 </div>
             </div>
-
         </div>
 
     </div>
 </div>
 
+<!-- ========================================== -->
+<!-- MODAL: ADD ROW -->
+<!-- ========================================== -->
+<div class="modal" id="addRowModal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; margin-bottom:18px;">
+            <h3 style="font-weight:800; color:var(--primary-dark);">Add Planning Row</h3>
+            <button onclick="closeAddRowModal()" style="font-size:1.5rem; background:none; border:none; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        <form action="{{ url_for('add_workspace_row', event_id=event.id) }}" method="POST">
+            <div class="form-group">
+                <label>Date / Timeline</label>
+                <input type="text" name="date" placeholder="e.g. 2026-10-10 or Pre-event" required>
+            </div>
+            <div class="form-group">
+                <label>Task Title</label>
+                <input type="text" name="task" placeholder="e.g. Setup Sound System" required>
+            </div>
+            <div class="form-group">
+                <label>Assignee</label>
+                <input type="text" name="assignee" placeholder="e.g. Jordan K.">
+            </div>
+            <div class="form-group">
+                <label>Details</label>
+                <input type="text" name="details" placeholder="e.g. Coordinate speakers with AV Club">
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" name="notes" placeholder="e.g. Check power sockets count">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status">
+                    <option value="To Do">To Do</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <button type="submit" class="btn" style="width:100%; margin-top:8px;">Add Row</button>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: EDIT ROW -->
+<!-- ========================================== -->
+<div class="modal" id="editRowModal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; margin-bottom:18px;">
+            <h3 style="font-weight:800; color:var(--primary-dark);">Edit Planning Row</h3>
+            <button onclick="closeEditRowModal()" style="font-size:1.5rem; background:none; border:none; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        <form id="editRowForm" method="POST">
+            <div class="form-group">
+                <label>Date / Timeline</label>
+                <input type="text" name="date" id="edit_date" required>
+            </div>
+            <div class="form-group">
+                <label>Task Title</label>
+                <input type="text" name="task" id="edit_task" required>
+            </div>
+            <div class="form-group">
+                <label>Assignee</label>
+                <input type="text" name="assignee" id="edit_assignee">
+            </div>
+            <div class="form-group">
+                <label>Details</label>
+                <input type="text" name="details" id="edit_details">
+            </div>
+            <div class="form-group">
+                <label>Notes</label>
+                <input type="text" name="notes" id="edit_notes">
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status" id="edit_status">
+                    <option value="To Do">To Do</option>
+                    <option value="In Progress">In Progress</option>
+                    <option value="Completed">Completed</option>
+                </select>
+            </div>
+            <button type="submit" class="btn" style="width:100%; margin-top:8px;">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openAddRowModal() { document.getElementById('addRowModal').classList.add('active'); }
+    function closeAddRowModal() { document.getElementById('addRowModal').classList.remove('active'); }
+
+    function openEditRowModal(row) {
+        document.getElementById('edit_date').value = row.date;
+        document.getElementById('edit_task').value = row.task;
+        document.getElementById('edit_assignee').value = row.assignee || '';
+        document.getElementById('edit_details').value = row.details || '';
+        document.getElementById('edit_notes').value = row.notes || '';
+        document.getElementById('edit_status').value = row.status;
+
+        document.getElementById('editRowForm').action = "/workspace/{{ event.id }}/edit_row/" + row.id;
+        document.getElementById('editRowModal').classList.add('active');
+    }
+    function closeEditRowModal() { document.getElementById('editRowModal').classList.remove('active'); }
+</script>
 </body>
 </html>

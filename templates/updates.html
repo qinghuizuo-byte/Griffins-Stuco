@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Latest Stuco Updates &amp; News</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #0066cc;
+            --primary-dark: #004488;
+            --primary-light: #e6f0fa;
+            --bg: #f8fafc;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --accent: #10b981;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            padding: 24px;
+        }
+
+        .container { max-width: 1000px; margin: 0 auto; }
+
+        /* Navbar */
+        .navbar {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,102,204,0.08);
+            margin-bottom: 28px;
+            border-left: 6px solid var(--primary);
+        }
+        .brand-title { font-size: 1.25rem; font-weight: 800; color: var(--primary-dark); }
+        .nav-links { display: flex; gap: 14px; align-items: center; }
+        .nav-link {
+            text-decoration: none; color: var(--text); font-weight: 600; font-size: 0.88rem;
+            padding: 7px 14px; border-radius: 8px; transition: background 0.15s;
+        }
+        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+        .nav-link.active { background: var(--primary); color: white; }
+
+        /* Hero Header */
+        .hero {
+            background: linear-gradient(135deg, #0066cc 0%, #2563eb 100%);
+            border-radius: 16px;
+            padding: 40px;
+            color: white;
+            margin-bottom: 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 18px rgba(0,102,204,0.12);
+        }
+        .hero h1 { font-size: 2rem; font-weight: 900; margin-bottom: 8px; }
+        .hero p { font-size: 0.98rem; opacity: 0.9; }
+
+        .btn {
+            background: var(--primary); color: white; border: none; font-family: inherit;
+            font-weight: 700; font-size: 0.9rem; padding: 10px 20px; border-radius: 8px;
+            cursor: pointer; transition: all 0.2s; text-decoration: none;
+            display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn:hover { background: var(--primary-dark); transform: translateY(-1px); }
+        .btn-outline { background: white; color: var(--primary); border: 1.5px solid var(--primary); }
+        .btn-outline:hover { background: var(--primary-light); }
+        .btn-danger { background: #ef4444; }
+        .btn-danger:hover { background: #dc2626; }
+
+        /* Updates Feed */
+        .updates-feed { display: flex; flex-direction: column; gap: 24px; }
+        
+        .update-card {
+            background: var(--card); border-radius: 14px; padding: 28px;
+            border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            position: relative; transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .update-card:hover {
+            transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+
+        .update-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; }
+        .update-title { font-size: 1.35rem; font-weight: 800; color: var(--primary-dark); }
+        
+        .update-meta { font-size: 0.85rem; color: var(--muted); font-weight: 500; margin-bottom: 16px; }
+        .update-content { font-size: 0.95rem; line-height: 1.6; color: var(--text); margin-bottom: 18px; }
+
+        /* Badges */
+        .badge {
+            display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;
+        }
+        .badge-priority { background: #fee2e2; color: #ef4444; }
+        .badge-event { background: #dbeafe; color: #2563eb; }
+        .badge-community { background: #dcfce7; color: #10b981; }
+        .badge-general { background: #f1f5f9; color: #475569; }
+
+        /* Modals */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.4); z-index: 100; align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; border-radius: 14px; padding: 28px; width: 100%; max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15); animation: zoomIn 0.2s ease;
+        }
+
+        @keyframes zoomIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header { font-size: 1.2rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 18px; display: flex; justify-content: space-between; }
+        .close-btn { font-size: 1.5rem; color: var(--muted); cursor: pointer; border: none; background: none; }
+
+        .form-group { margin-bottom: 14px; }
+        .form-group label { display: block; font-size: 0.85rem; font-weight: 700; margin-bottom: 6px; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px 12px; border: 1.5px solid var(--border); border-radius: 8px;
+            font-family: inherit; font-size: 0.9rem; outline: none;
+        }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+
+        .alert {
+            background: var(--primary-light); border: 1px solid #bfdbfe; color: var(--primary-dark);
+            padding: 12px 16px; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+
+    <!-- Navbar Header -->
+    <div class="navbar">
+        <div class="brand-title">🦅 Stuco Updates &amp; News</div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/calendar" class="nav-link">Calendar</a>
+            <a href="/meetings" class="nav-link">Meetings</a>
+            <a href="/updates" class="nav-link active">Updates</a>
+            <a href="/stats" class="nav-link">Statistics</a>
+            {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher'] %}
+            <a href="/admin" class="nav-link">Admin</a>
+            {% endif %}
+            {% if current_user.is_authenticated %}
+            <a href="/logout" class="nav-link" style="color:#ef4444;">Sign out</a>
+            {% else %}
+            <a href="/login" class="nav-link" style="background:var(--primary);color:white;">🔑 Sign In</a>
+            {% endif %}
+        </div>
+    </div>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert">{{ message }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <!-- Hero Header -->
+    <div class="hero">
+        <div>
+            <h1>Stuco Newsroom</h1>
+            <p>Stay informed with the latest announcements, pep rally details, and event updates.</p>
+        </div>
+        {% if current_user.is_authenticated and (current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher'] or current_user.can_edit_updates) %}
+        <button class="btn btn-outline" onclick="openAddModal()" style="background: white; border-color: white; color: var(--primary);">
+            📝 Publish Update
+        </button>
+        {% endif %}
+    </div>
+
+    <!-- Feed -->
+    <div class="updates-feed">
+        {% for ann in announcements %}
+        <div class="update-card">
+            <div class="update-header">
+                <span class="badge badge-{{ ann.badge_color }}">{{ ann.badge }}</span>
+                <span style="font-size: 0.82rem; color: var(--muted); font-weight: 600;">{{ ann.date }}</span>
+            </div>
+            
+            <h2 class="update-title">{{ ann.title }}</h2>
+            <p class="update-content">{{ ann.content }}</p>
+
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                {% if ann.link %}
+                <a href="{{ ann.link }}" class="btn btn-outline" style="padding: 6px 14px; font-size: 0.82rem;">
+                    {{ ann.link_text }}
+                </a>
+                {% else %}
+                <div></div>
+                {% endif %}
+
+                {% if current_user.is_authenticated and (current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher'] or current_user.can_edit_updates) %}
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn btn-outline" style="padding: 6px 12px; font-size: 0.78rem;" onclick='openEditModal({{ ann | tojson | safe }})'>Edit</button>
+                    <form action="{{ url_for('delete_update', ann_id=ann.id) }}" method="POST" style="display:inline;" onsubmit="return confirm('Delete this update?');">
+                        <button type="submit" class="btn btn-danger" style="padding: 6px 12px; font-size: 0.78rem;">Delete</button>
+                    </form>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: ADD UPDATE -->
+<!-- ========================================== -->
+<div id="addModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Publish Stuco Update</h3>
+            <button class="close-btn" onclick="closeAddModal()">&times;</button>
+        </div>
+        <form action="{{ url_for('add_update') }}" method="POST">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" name="title" required placeholder="e.g. Pep Rally Date Announced">
+            </div>
+            <div class="form-group">
+                <label>Category Badge</label>
+                <select name="badge">
+                    <option value="Important Update">📢 Important Update</option>
+                    <option value="Tickets &amp; RSVPs">🎟️ Tickets &amp; RSVPs</option>
+                    <option value="Student Voice">🗣️ Student Voice</option>
+                    <option value="Community">🌱 Community</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Badge Color</label>
+                <select name="badge_color">
+                    <option value="priority">🔴 Priority (Red)</option>
+                    <option value="event">🔵 Event (Blue)</option>
+                    <option value="community">🟢 Community (Green)</option>
+                    <option value="general">⚪ General (Slate)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Content Description</label>
+                <textarea name="content" rows="4" required placeholder="Write the announcement description..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Link Destination URL (Optional)</label>
+                <input type="text" name="link" placeholder="e.g. /calendar or booking forms url">
+            </div>
+            <div class="form-group">
+                <label>Link Text</label>
+                <input type="text" name="link_text" value="Learn More →">
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">Publish Now</button>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: EDIT UPDATE -->
+<!-- ========================================== -->
+<div id="editModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Edit Stuco Update</h3>
+            <button class="close-btn" onclick="closeEditModal()">&times;</button>
+        </div>
+        <form id="editForm" method="POST">
+            <div class="form-group">
+                <label>Title</label>
+                <input type="text" name="title" id="edit_title" required>
+            </div>
+            <div class="form-group">
+                <label>Category Badge</label>
+                <select name="badge" id="edit_badge">
+                    <option value="Important Update">📢 Important Update</option>
+                    <option value="Tickets &amp; RSVPs">🎟️ Tickets &amp; RSVPs</option>
+                    <option value="Student Voice">🗣️ Student Voice</option>
+                    <option value="Community">🌱 Community</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Badge Color</label>
+                <select name="badge_color" id="edit_badge_color">
+                    <option value="priority">🔴 Priority (Red)</option>
+                    <option value="event">🔵 Event (Blue)</option>
+                    <option value="community">🟢 Community (Green)</option>
+                    <option value="general">⚪ General (Slate)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Content Description</label>
+                <textarea name="content" id="edit_content" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <label>Link Destination URL (Optional)</label>
+                <input type="text" name="link" id="edit_link">
+            </div>
+            <div class="form-group">
+                <label>Link Text</label>
+                <input type="text" name="link_text" id="edit_link_text">
+            </div>
+            <button type="submit" class="btn" style="width: 100%;">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openAddModal() { document.getElementById('addModal').classList.add('active'); }
+    function closeAddModal() { document.getElementById('addModal').classList.remove('active'); }
+
+    function openEditModal(ann) {
+        document.getElementById('edit_title').value = ann.title;
+        document.getElementById('edit_badge').value = ann.badge;
+        document.getElementById('edit_badge_color').value = ann.badge_color;
+        document.getElementById('edit_content').value = ann.content;
+        document.getElementById('edit_link').value = ann.link || '';
+        document.getElementById('edit_link_text').value = ann.link_text || 'Learn More →';
+
+        document.getElementById('editForm').action = "/updates/edit/" + ann.id;
+        document.getElementById('editModal').classList.add('active');
+    }
+    function closeEditModal() { document.getElementById('editModal').classList.remove('active'); }
+</script>
+</body>
+</html>

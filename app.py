@@ -52,8 +52,17 @@ google = oauth.register(
 
 
 # ==========================================
-# FLASK-LOGIN SETUP
+# FLASK-LOGIN & ROLE-BASED ACCESS CONTROL (RBAC)
 # ==========================================
+
+# Directory of roles and permissions (editable in the admin panel)
+ACCOUNTS = {
+    "president@bjsmicschool.com": {"name": "Cellestine", "role": "President", "can_edit_updates": True},
+    "vice@bjsmicschool.com": {"name": "Alex M.", "role": "Vice President", "can_edit_updates": True},
+    "member@bjsmicschool.com": {"name": "Jordan K.", "role": "Stuco Member", "can_edit_updates": False},
+    "student@bjsmicschool.com": {"name": "Sam V.", "role": "Student", "can_edit_updates": False},
+    "teacher@bjsmicschool.com": {"name": "Dr. Smith", "role": "Teacher", "can_edit_updates": True}
+}
 
 login_manager = LoginManager()
 login_manager.init_app(app)
@@ -64,11 +73,13 @@ login_manager.login_message_category = "info"
 
 class User(UserMixin):
     """Simple user class backed by session — no database needed."""
-    def __init__(self, user_id, name, email, picture):
+    def __init__(self, user_id, name, email, picture, role="Student", can_edit_updates=False):
         self.id = user_id
         self.name = name
         self.email = email
         self.picture = picture
+        self.role = role
+        self.can_edit_updates = can_edit_updates
 
     def get_id(self):
         return self.id
@@ -84,10 +95,23 @@ survey_completed_users = set()
 pending_event_surveys = {}
 
 
-
 @login_manager.user_loader
 def load_user(user_id):
     return active_users.get(user_id)
+
+
+# Decorator to restrict routes to specific roles
+from functools import wraps
+def require_role(allowed_roles):
+    def decorator(f):
+        @wraps(f)
+        def decorated_function(*args, **kwargs):
+            if not current_user.is_authenticated or current_user.role not in allowed_roles:
+                flash("🔒 Access Denied: You do not have permission to perform this action.", "danger")
+                return redirect(url_for('home'))
+            return f(*args, **kwargs)
+        return decorated_function
+    return decorator
 
 
 # ==========================================
@@ -100,7 +124,6 @@ def login_page():
         return redirect(url_for('home'))
     error = request.args.get('error')
     return render_template('login.html', error=error, dev_mode=DEV_MODE)
-
 
 
 @app.route('/auth/google')
@@ -131,13 +154,18 @@ def google_callback():
             error=f"Access denied. Only @{ALLOWED_DOMAIN} accounts are allowed. "
                   f"You signed in with: {email}"))
 
+    # Fetch role and permissions from ACCOUNTS directory, defaulting to Student
+    account_info = ACCOUNTS.get(email.lower(), {"name": user_info.get('name', email.split('@')[0]), "role": "Student", "can_edit_updates": False})
+    
     # Create or update user
     user_id = user_info.get('sub')  # Google's stable unique ID
     user = User(
         user_id=user_id,
-        name=user_info.get('name', email.split('@')[0]),
+        name=account_info["name"],
         email=email,
-        picture=user_info.get('picture', '')
+        picture=user_info.get('picture', ''),
+        role=account_info["role"],
+        can_edit_updates=account_info["can_edit_updates"]
     )
     active_users[user_id] = user
     login_user(user, remember=True)
@@ -156,7 +184,6 @@ def google_callback():
     return redirect(next_page)
 
 
-
 @app.route('/logout')
 @login_required
 def logout():
@@ -167,21 +194,30 @@ def logout():
 
 @app.route('/dev-login')
 def dev_login():
-    """Dev-only bypass: auto-login as Cellestine. Disabled when Google credentials are set."""
+    """Dev-only bypass supporting multiple roles. Disabled when Google credentials are set."""
     if not DEV_MODE:
         return redirect(url_for('login_page'))
-    user_id = 'dev-user-cellestine'
+    
+    email = request.args.get('email', 'president@bjsmicschool.com').lower()
+    account_info = ACCOUNTS.get(email)
+    if not account_info:
+        return redirect(url_for('login_page', error="Selected dev account does not exist."))
+
+    user_id = f"dev-user-{email.split('@')[0]}"
     user = User(
         user_id=user_id,
-        name='Cellestine (Dev)',
-        email='cellestine@bjsmicschool.com',
-        picture=''
+        name=account_info["name"],
+        email=email,
+        picture="",
+        role=account_info["role"],
+        can_edit_updates=account_info["can_edit_updates"]
     )
     active_users[user_id] = user
     login_user(user, remember=True)
-    # Skip survey for dev user so you go straight to home
+    # Skip survey for dev users to make testing faster
     survey_completed_users.add(user_id)
     return redirect(url_for('home'))
+
 
 
 
@@ -288,9 +324,9 @@ EVENTS = {
             {"time": "10:30 PM", "activity": "Event Concludes"}
         ],
         "tasks": [
-            {"id": 101, "title": "Finalize DJ Contract", "committee": "Executive", "assignee": "Alex M.", "due_date": "2026-10-01", "status": "In Progress"},
-            {"id": 102, "title": "Confirm Gymnasium Floor Coverings", "committee": "Logistics", "assignee": "Jordan K.", "due_date": "2026-10-05", "status": "To Do"},
-            {"id": 103, "title": "Design Ticket Flyers & Social Media Graphics", "committee": "Public Relations", "assignee": "Taylor S.", "due_date": "2026-09-28", "status": "Completed"}
+            {"id": 101, "date": "2026-10-01", "task": "Finalize DJ Contract", "assignee": "Alex M.", "details": "Review and sign the contract with DJ Griffin", "notes": "Approved by Advisor", "status": "In Progress"},
+            {"id": 102, "date": "2026-10-05", "task": "Confirm Gymnasium Floor Coverings", "assignee": "Jordan K.", "details": "Check inventory for protective tarp rolls", "notes": "Need to verify tape quantity", "status": "To Do"},
+            {"id": 103, "date": "2026-09-28", "task": "Design Ticket Flyers & Social Graphics", "assignee": "Taylor S.", "details": "Create Canva assets and share with PR team", "notes": "Flyers printed!", "status": "Completed"}
         ],
         "photos": []
     },
@@ -314,7 +350,10 @@ EVENTS = {
             {"time": "2:00 PM", "activity": "Class Tug-of-War Competition"},
             {"time": "2:45 PM", "activity": "Presidential Welcome Address & Free Popsicles"}
         ],
-        "tasks": [],
+        "tasks": [
+            {"id": 201, "date": "2026-08-15", "task": "Rent ice cream coolers", "assignee": "Jordan K.", "details": "Source 3 coolers for popsicles", "notes": "Popsicles sponsored", "status": "To Do"},
+            {"id": 202, "date": "2026-08-20", "task": "Invite Marching Band", "assignee": "Taylor S.", "details": "Send invitation letter to Band Director", "notes": "Awaiting response", "status": "In Progress"}
+        ],
         "photos": []
     },
     3: {
@@ -336,7 +375,9 @@ EVENTS = {
             {"time": "12:00 PM", "activity": "Club Booths & Food Stalls Open"},
             {"time": "1:00 PM", "activity": "Acoustic Stage Performances"}
         ],
-        "tasks": [],
+        "tasks": [
+            {"id": 301, "date": "2026-09-01", "task": "Print layout map", "assignee": "Alex M.", "details": "Draft map of booth spacing in main courtyard", "notes": "Need to count clubs first", "status": "To Do"}
+        ],
         "photos": []
     }
 }
@@ -503,38 +544,62 @@ def event_workspace(event_id):
     return render_template('workspace.html', event=event)
 
 
-@app.route('/workspace/<int:event_id>/add_task', methods=['POST'])
+@app.route('/workspace/<int:event_id>/add_row', methods=['POST'])
 @login_required
-def add_task(event_id):
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'])
+def add_workspace_row(event_id):
     event = EVENTS.get(event_id)
     if event:
-        title = request.form.get('title')
-        committee = request.form.get('committee')
-        assignee = request.form.get('assignee')
-        due_date = request.form.get('due_date')
-        if title:
-            event["tasks"].append({
-                "id": len(event["tasks"]) + 101,
-                "title": title,
-                "committee": committee or "General",
-                "assignee": assignee or "Unassigned",
-                "due_date": due_date or "TBD",
-                "status": "To Do"
-            })
-            flash("New task added to board!", "success")
+        date = request.form.get('date', '')
+        task = request.form.get('task', '')
+        assignee = request.form.get('assignee', '')
+        details = request.form.get('details', '')
+        notes = request.form.get('notes', '')
+        status = request.form.get('status', 'To Do')
+        
+        new_row = {
+            "id": len(event.get("tasks", [])) + 101,
+            "date": date,
+            "task": task,
+            "assignee": assignee,
+            "details": details,
+            "notes": notes,
+            "status": status
+        }
+        if "tasks" not in event:
+            event["tasks"] = []
+        event["tasks"].append(new_row)
+        flash("Timeline row added successfully!", "success")
     return redirect(url_for('event_workspace', event_id=event_id))
 
 
-@app.route('/workspace/<int:event_id>/toggle_task/<int:task_id>', methods=['POST'])
+@app.route('/workspace/<int:event_id>/edit_row/<int:row_id>', methods=['POST'])
 @login_required
-def toggle_task(event_id, task_id):
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'])
+def edit_workspace_row(event_id, row_id):
     event = EVENTS.get(event_id)
     if event:
-        for task in event["tasks"]:
-            if task["id"] == task_id:
-                statuses = ["To Do", "In Progress", "Completed"]
-                task["status"] = statuses[(statuses.index(task["status"]) + 1) % len(statuses)]
+        for r in event.get("tasks", []):
+            if r["id"] == row_id:
+                r["date"] = request.form.get('date', r["date"])
+                r["task"] = request.form.get('task', r["task"])
+                r["assignee"] = request.form.get('assignee', r["assignee"])
+                r["details"] = request.form.get('details', r["details"])
+                r["notes"] = request.form.get('notes', r["notes"])
+                r["status"] = request.form.get('status', r["status"])
+                flash("Timeline row updated successfully!", "success")
                 break
+    return redirect(url_for('event_workspace', event_id=event_id))
+
+
+@app.route('/workspace/<int:event_id>/delete_row/<int:row_id>', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'])
+def delete_workspace_row(event_id, row_id):
+    event = EVENTS.get(event_id)
+    if event:
+        event["tasks"] = [r for r in event.get("tasks", []) if r["id"] != row_id]
+        flash("Timeline row deleted successfully!", "success")
     return redirect(url_for('event_workspace', event_id=event_id))
 
 
@@ -966,6 +1031,275 @@ def trigger_event_survey():
         event_title = EVENTS[event_id]['title']
         flash(f"📬 Post-event survey for '{event_title}' sent to all active members!", "success")
     return redirect(url_for('stats_page'))
+
+
+# ==========================================
+# ADMIN PORTAL ROUTES
+# ==========================================
+
+@app.route('/admin')
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher'])
+def admin_page():
+    return render_template('admin.html', accounts=ACCOUNTS, members=STUCO_MEMBERS)
+
+
+@app.route('/admin/update_user', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President'])
+def admin_update_user():
+    email = request.form.get('email', '').strip().lower()
+    name = request.form.get('name', '').strip()
+    role = request.form.get('role', 'Student')
+    can_edit_updates = request.form.get('can_edit_updates') == 'true'
+
+    if not email:
+        flash("Email is required.", "danger")
+        return redirect(url_for('admin_page'))
+
+    # Update or add new account
+    ACCOUNTS[email] = {
+        "name": name or email.split('@')[0],
+        "role": role,
+        "can_edit_updates": can_edit_updates
+    }
+    
+    # If the user is currently logged in/active, update their session object
+    for user_id, active_user in active_users.items():
+        if active_user.email.lower() == email:
+            active_user.role = role
+            active_user.can_edit_updates = can_edit_updates
+            active_user.name = ACCOUNTS[email]["name"]
+            break
+
+    flash(f"Account for {email} updated successfully!", "success")
+    return redirect(url_for('admin_page'))
+
+
+@app.route('/admin/delete_user', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President'])
+def admin_delete_user():
+    email = request.form.get('email', '').strip().lower()
+    if email in ACCOUNTS:
+        ACCOUNTS.pop(email)
+        # Log out user if active
+        for user_id, active_user in list(active_users.items()):
+            if active_user.email.lower() == email:
+                active_users.pop(user_id, None)
+                break
+        flash(f"Account {email} deleted successfully.", "success")
+    return redirect(url_for('admin_page'))
+
+
+@app.route('/admin/edit_leader', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher'])
+def admin_edit_leader():
+    index = _safe_int(request.form.get('index'), -1)
+    name = request.form.get('name', '').strip()
+    role = request.form.get('role', '').strip()
+    grade = request.form.get('grade', '').strip()
+    committee = request.form.get('committee', '').strip()
+    quote = request.form.get('quote', '').strip()
+    email = request.form.get('email', '').strip()
+
+    if 0 <= index < len(STUCO_MEMBERS):
+        STUCO_MEMBERS[index] = {
+            "name": name,
+            "role": role,
+            "grade": grade,
+            "committee": committee,
+            "quote": quote,
+            "email": email
+        }
+        flash(f"Leader profile for {name} updated successfully!", "success")
+    return redirect(url_for('admin_page'))
+
+
+# ==========================================
+# STUCO UPDATES / ANNOUNCEMENTS ROUTES
+# ==========================================
+
+@app.route('/updates')
+def updates_page():
+    return render_template('updates.html', announcements=ANNOUNCEMENTS)
+
+
+@app.route('/updates/add', methods=['POST'])
+@login_required
+def add_update():
+    # Only allow Admin roles OR users explicitly granted can_edit_updates
+    if current_user.role not in ['President', 'Vice President', 'Secretary', 'Teacher'] and not current_user.can_edit_updates:
+        flash("🔒 Access Denied: You do not have permission to publish Stuco updates.", "danger")
+        return redirect(url_for('updates_page'))
+
+    from datetime import datetime
+    title = request.form.get('title', '').strip()
+    content = request.form.get('content', '').strip()
+    badge = request.form.get('badge', 'General')
+    badge_color = request.form.get('badge_color', 'community')
+    link = request.form.get('link', '')
+    link_text = request.form.get('link_text', 'Learn More →')
+
+    if not title or not content:
+        flash("Title and Content are required.", "danger")
+        return redirect(url_for('updates_page'))
+
+    new_id = max([a['id'] for a in ANNOUNCEMENTS], default=0) + 1
+    ANNOUNCEMENTS.insert(0, {
+        "id": new_id,
+        "title": title,
+        "date": datetime.now().strftime('%B %d, %Y'),
+        "badge": badge,
+        "badge_color": badge_color,
+        "content": content,
+        "link": link,
+        "link_text": link_text
+    })
+    flash("Stuco update published successfully!", "success")
+    return redirect(url_for('updates_page'))
+
+
+@app.route('/updates/edit/<int:ann_id>', methods=['POST'])
+@login_required
+def edit_update(ann_id):
+    if current_user.role not in ['President', 'Vice President', 'Secretary', 'Teacher'] and not current_user.can_edit_updates:
+        flash("🔒 Access Denied: You do not have permission to edit Stuco updates.", "danger")
+        return redirect(url_for('updates_page'))
+
+    ann = next((a for a in ANNOUNCEMENTS if a['id'] == ann_id), None)
+    if ann:
+        ann["title"] = request.form.get('title', ann["title"])
+        ann["content"] = request.form.get('content', ann["content"])
+        ann["badge"] = request.form.get('badge', ann["badge"])
+        ann["badge_color"] = request.form.get('badge_color', ann["badge_color"])
+        ann["link"] = request.form.get('link', ann["link"])
+        ann["link_text"] = request.form.get('link_text', ann["link_text"])
+        flash("Stuco update updated successfully!", "success")
+    return redirect(url_for('updates_page'))
+
+
+@app.route('/updates/delete/<int:ann_id>', methods=['POST'])
+@login_required
+def delete_update(ann_id):
+    if current_user.role not in ['President', 'Vice President', 'Secretary', 'Teacher'] and not current_user.can_edit_updates:
+        flash("🔒 Access Denied: You do not have permission to delete Stuco updates.", "danger")
+        return redirect(url_for('updates_page'))
+
+    global ANNOUNCEMENTS
+    ANNOUNCEMENTS = [a for a in ANNOUNCEMENTS if a['id'] != ann_id]
+    flash("Stuco update deleted successfully.", "success")
+    return redirect(url_for('updates_page'))
+
+
+# ==========================================
+# EVENTS & BOOKING URL ROUTES
+# ==========================================
+
+@app.route('/calendar/add', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher'])
+def add_calendar_event():
+    title = request.form.get('title', '').strip()
+    date = request.form.get('date', '').strip()
+    time = request.form.get('time', '').strip()
+    location = request.form.get('location', '').strip()
+    category = request.form.get('category', '').strip()
+    lead = request.form.get('lead', '').strip()
+    committee = request.form.get('committee', '').strip()
+    budget = request.form.get('budget', '$0.00').strip()
+    description = request.form.get('description', '').strip()
+
+    if not title or not date:
+        flash("Event Title and Date are required.", "danger")
+        return redirect(url_for('public_calendar'))
+
+    new_id = max(EVENTS.keys(), default=0) + 1
+    
+    # Format display date (e.g., Saturday, October 24, 2026)
+    from datetime import datetime
+    try:
+        dt_obj = datetime.strptime(date, '%Y-%m-%d')
+        display_date = dt_obj.strftime('%A, %B %d, %Y')
+    except Exception:
+        display_date = date
+
+    EVENTS[new_id] = {
+        "id": new_id,
+        "title": title,
+        "date": date,
+        "display_date": display_date,
+        "time": time or "TBD",
+        "location": location or "Main Campus",
+        "category": category or "General",
+        "lead": lead or current_user.name,
+        "committee": committee or "General",
+        "budget_allocated": budget,
+        "description": description,
+        "ticket_link": "",
+        "ticket_status": "Free Entry",
+        "has_workspace": True,
+        "schedule": [],
+        "tasks": [],
+        "photos": []
+    }
+    flash(f"Event '{title}' added to calendar!", "success")
+    return redirect(url_for('public_calendar'))
+
+
+@app.route('/calendar/edit/<int:event_id>', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher'])
+def edit_calendar_event(event_id):
+    event = EVENTS.get(event_id)
+    if event:
+        event["title"] = request.form.get('title', event["title"])
+        event["time"] = request.form.get('time', event["time"])
+        event["location"] = request.form.get('location', event["location"])
+        event["category"] = request.form.get('category', event["category"])
+        event["lead"] = request.form.get('lead', event["lead"])
+        event["committee"] = request.form.get('committee', event["committee"])
+        event["budget_allocated"] = request.form.get('budget', event["budget_allocated"])
+        event["description"] = request.form.get('description', event["description"])
+        
+        date = request.form.get('date', event["date"])
+        if date != event["date"]:
+            event["date"] = date
+            from datetime import datetime
+            try:
+                dt_obj = datetime.strptime(date, '%Y-%m-%d')
+                event["display_date"] = dt_obj.strftime('%A, %B %d, %Y')
+            except Exception:
+                event["display_date"] = date
+
+        flash(f"Event '{event['title']}' updated successfully!", "success")
+    return redirect(url_for('public_calendar'))
+
+
+@app.route('/calendar/delete/<int:event_id>', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher'])
+def delete_calendar_event(event_id):
+    if event_id in EVENTS:
+        title = EVENTS[event_id]['title']
+        EVENTS.pop(event_id)
+        flash(f"Event '{title}' deleted from calendar.", "success")
+    return redirect(url_for('public_calendar'))
+
+
+@app.route('/calendar/edit_booking/<int:event_id>', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher'])
+def edit_event_booking(event_id):
+    event = EVENTS.get(event_id)
+    if event:
+        booking_url = request.form.get('ticket_link', '').strip()
+        ticket_status = request.form.get('ticket_status', 'Tickets Available').strip()
+        event["ticket_link"] = booking_url
+        event["ticket_status"] = ticket_status or "Free Entry"
+        flash(f"Booking URL and status updated for '{event['title']}'!", "success")
+    return redirect(url_for('public_calendar'))
 
 
 # ==========================================

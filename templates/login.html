@@ -306,13 +306,26 @@
         {% else %}
         <!-- DEV MODE: Google OAuth not yet configured -->
         <div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:0.83rem;color:#92400e;">
-            <strong>⚙️ Dev Mode Active</strong> — Google OAuth not yet configured.<br>
-            Use the button below to enter with a test account.
+            <strong>⚙️ Dev Mode Active</strong> — Choose a test account below to log in and verify permissions.
         </div>
-        <a href="{{ url_for('dev_login') }}" class="google-btn" id="google-signin-btn"
-           style="background:#0066cc;color:white;border-color:#0066cc;">
-            🦅 Enter as Cellestine (Dev Preview)
-        </a>
+        
+        <div style="display: flex; flex-direction: column; gap: 8px; margin-bottom: 20px;">
+            <a href="{{ url_for('dev_login', email='president@bjsmicschool.com') }}" class="google-btn" style="background:#0066cc;color:white;border-color:#0066cc;margin-bottom:0;padding:10px;">
+                👑 President (Cellestine)
+            </a>
+            <a href="{{ url_for('dev_login', email='vice@bjsmicschool.com') }}" class="google-btn" style="background:#2563eb;color:white;border-color:#2563eb;margin-bottom:0;padding:10px;">
+                ⚡ Vice President (Alex M.)
+            </a>
+            <a href="{{ url_for('dev_login', email='member@bjsmicschool.com') }}" class="google-btn" style="background:#4b5563;color:white;border-color:#4b5563;margin-bottom:0;padding:10px;">
+                📋 Stuco Member (Jordan K.)
+            </a>
+            <a href="{{ url_for('dev_login', email='student@bjsmicschool.com') }}" class="google-btn" style="background:#10b981;color:white;border-color:#10b981;margin-bottom:0;padding:10px;">
+                🎓 Regular Student (Sam V.)
+            </a>
+            <a href="{{ url_for('dev_login', email='teacher@bjsmicschool.com') }}" class="google-btn" style="background:#d97706;color:white;border-color:#d97706;margin-bottom:0;padding:10px;">
+                🏫 Teacher / Advisor (Dr. Smith)
+            </a>
+        </div>
         {% endif %}
 
         <div class="divider">{% if dev_mode %}dev preview mode{% else %}school accounts only{% endif %}</div>
