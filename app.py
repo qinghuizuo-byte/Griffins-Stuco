@@ -4,7 +4,7 @@ from werkzeug.utils import secure_filename
 from authlib.integrations.flask_client import OAuth
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 
-app = Flask(__name__)
+app = Flask(__name__, template_folder='.', static_folder='static')
 
 # ==========================================
 # CONFIGURATION
@@ -70,6 +70,7 @@ ACCOUNTS = {
     "280009@bjsmicschool.com": {"name": "Hyun Lee", "role": "Stuco Member", "can_edit_updates": False},
     "27270018@bjsmicschool.com": {"name": "Camille Lv", "role": "Stuco Member", "can_edit_updates": False},
     "290010@bjsmicschool.com": {"name": "Camille Kou", "role": "Stuco Member", "can_edit_updates": False},
+    "280030@bjsmicschool.com": {"name": "Connie Ho", "role": "Stuco Member", "can_edit_updates": False},
     "student@bjsmicschool.com": {"name": "Sam V.", "role": "Student", "can_edit_updates": False}
 }
 
@@ -272,7 +273,6 @@ STUCO_MEMBERS = [
         "name": "Cellestine Zuo",
         "role": "Student Body President",
         "grade": "Senior (Class of '27)",
-        "committee": "Executive Council",
         "quote": "Leading our return to the main campus with transparency, enthusiasm, and unstoppable Griffin spirit!",
         "email": "270036@bjsmicschool.com"
     },
@@ -280,7 +280,6 @@ STUCO_MEMBERS = [
         "name": "Jerry Li",
         "role": "Vice President",
         "grade": "Senior (Class of '27)",
-        "committee": "Executive Council",
         "quote": "Coordinating student life activities and serving as the direct channel between student voices and administration.",
         "email": "270013@bjsmicschool.com"
     },
@@ -288,7 +287,6 @@ STUCO_MEMBERS = [
         "name": "Lucas Lee",
         "role": "Secretary",
         "grade": "Junior (Class of '28)",
-        "committee": "Executive Council",
         "quote": "Managing documentations, maintaining schedules, and keeping student leaders fully synchronized.",
         "email": "28010@bjsmicschool.com"
     },
@@ -296,7 +294,6 @@ STUCO_MEMBERS = [
         "name": "Amy Feng",
         "role": "Student Body Treasurer",
         "grade": "Senior (Class of '27)",
-        "committee": "Finance & Budget",
         "quote": "Allocating funds fairly across events and maintaining a transparent budget for all student activities.",
         "email": "270005@bjsmicschoo.com"
     },
@@ -304,23 +301,20 @@ STUCO_MEMBERS = [
         "name": "Lily Goufo",
         "role": "Activity Officer",
         "grade": "Junior (Class of '28)",
-        "committee": "Spirit & Events Committee",
         "quote": "Organizing school dances, spirit rallies, and campus festivals to build our Griffin community.",
         "email": "280007@bjsmicschool.com"
     },
     {
         "name": "Sophie Sun",
         "role": "Media Officer",
-        "grade": "Freshman (Class of '29)",
-        "committee": "Publicity & Media",
+        "grade": "Sophomore (Class of '29)",
         "quote": "Documenting school memories through photos, recap videos, and dynamic visuals.",
         "email": "290018@bjsmicschool.com"
     },
     {
         "name": "Rocky Yang",
         "role": "Publicity Officer",
-        "grade": "Freshman (Class of '29)",
-        "committee": "Publicity & Media",
+        "grade": "Sophomore (Class of '29)",
         "quote": "Designing flyers, managing social channels, and publicizing all upcoming student activities.",
         "email": "290024@bjsmicschool.com"
     },
@@ -328,7 +322,6 @@ STUCO_MEMBERS = [
         "name": "Mike Zhan",
         "role": "Chief Technology Officer",
         "grade": "Junior (Class of '28)",
-        "committee": "Tech & Systems",
         "quote": "Developing digital tools, maintaining the Stuco site, and managing systems integration.",
         "email": "280024@bjsmicschool.com"
     },
@@ -336,7 +329,6 @@ STUCO_MEMBERS = [
         "name": "Cassie Wu",
         "role": "Red House Leader",
         "grade": "Junior (Class of '28)",
-        "committee": "House Council",
         "quote": "Fostering collaboration, leading sports meets, and driving Red House to victory!",
         "email": "280019@bjsmicschool.com"
     },
@@ -344,7 +336,6 @@ STUCO_MEMBERS = [
         "name": "Hyun Lee",
         "role": "Green House Leader",
         "grade": "Junior (Class of '28)",
-        "committee": "House Council",
         "quote": "Bringing green house pride to pep rallies, sports days, and academic challenge basins.",
         "email": "280009@bjsmicschool.com"
     },
@@ -352,17 +343,22 @@ STUCO_MEMBERS = [
         "name": "Camille Lv",
         "role": "Yellow House Leader",
         "grade": "Senior (Class of '27)",
-        "committee": "House Council",
         "quote": "Powering Yellow House to first place with high energy, house events, and friendly competition.",
         "email": "27270018@bjsmicschool.com"
     },
     {
         "name": "Camille Kou",
         "role": "Blue House Leader",
-        "grade": "Freshman (Class of '29)",
-        "committee": "House Council",
+        "grade": "Sophomore (Class of '29)",
         "quote": "Inspiring blue house solidarity, support, and excellence in every student-led tournament.",
         "email": "290010@bjsmicschool.com"
+    },
+    {
+        "name": "Connie Ho",
+        "role": "Charity Officer",
+        "grade": "Junior (Class of '28)",
+        "quote": "Dedicated to organizing donation drives, volunteering campaigns, and community service projects to make a difference.",
+        "email": "280030@bjsmicschool.com"
     }
 ]
 
@@ -374,9 +370,14 @@ EVENTS = {
         "display_date": "Saturday, October 24, 2026",
         "time": "7:00 PM - 10:30 PM",
         "location": "Main Gymnasium & Courtyard",
-        "category": "School Dance",
+        "category": "Paid Event",
+        "scope": "Entire School",
+        "requires_booking": True,
+        "participants": [
+            {"id": 1, "name": "Sam V.", "grade": "12", "email": "student@bjsmicschool.com", "status": "Confirmed"},
+            {"id": 2, "name": "Jerry Li", "grade": "12", "email": "270013@bjsmicschool.com", "status": "Pending"}
+        ],
         "lead": "Cellestine (Stuco President)",
-        "committee": "Spirit & Events Committee",
         "budget_allocated": "$2,500.00",
         "description": "Annual homecoming dance setup on the main campus. Theme and decor layout pending final approval.",
         "ticket_link": "https://schooltickets.example.com/homecoming",
@@ -402,11 +403,13 @@ EVENTS = {
         "display_date": "Friday, August 28, 2026",
         "time": "1:30 PM - 3:00 PM",
         "location": "Central Courtyard",
-        "category": "Spirit Rally",
+        "category": "Free School Event",
+        "scope": "Entire School",
+        "requires_booking": False,
+        "participants": [],
         "lead": "Jordan K. (Logistics Lead)",
-        "committee": "Logistics Committee",
         "budget_allocated": "$350.00",
-        "description": "Kickoff pep rally introducing all Stuco committees, school mascot performance, and live class competitions.",
+        "description": "Kickoff pep rally introducing all Stuco committees, school mascot performance, and class competitions.",
         "ticket_link": "",
         "ticket_status": "Free Entry",
         "has_workspace": True,
@@ -428,9 +431,11 @@ EVENTS = {
         "display_date": "Tuesday, September 15, 2026",
         "time": "12:00 PM - 2:00 PM",
         "location": "Main Campus Plaza",
-        "category": "Fair",
+        "category": "Free School Event",
+        "scope": "High School",
+        "requires_booking": False,
+        "participants": [],
         "lead": "Alex M. (Vice President)",
-        "committee": "Executive Council",
         "budget_allocated": "$500.00",
         "description": "Explore 30+ student organizations, sign up for campus committees, and enjoy food stalls managed by Stuco.",
         "ticket_link": "",
@@ -602,11 +607,29 @@ def get_event_details(event_id):
 # 3. Event Workspace — public view, login required to edit
 @app.route('/workspace/<int:event_id>')
 def event_workspace(event_id):
-
     event = EVENTS.get(event_id)
     if not event:
         return "Event workspace not found", 404
-    return render_template('workspace.html', event=event)
+
+    if "purchases" not in event:
+        event["purchases"] = []
+
+    raw_budget_str = event.get("budget_allocated", "$0").replace('$', '').replace(',', '').strip()
+    try:
+        total_budget = float(raw_budget_str)
+    except ValueError:
+        total_budget = 0.0
+
+    total_spent = sum(float(p.get("cost", 0)) for p in event["purchases"])
+    remaining_budget = total_budget - total_spent
+
+    return render_template(
+        'workspace.html',
+        event=event,
+        total_budget=total_budget,
+        total_spent=total_spent,
+        remaining_budget=remaining_budget
+    )
 
 
 @app.route('/workspace/<int:event_id>/add_row', methods=['POST'])
@@ -668,6 +691,103 @@ def delete_workspace_row(event_id, row_id):
     return redirect(url_for('event_workspace', event_id=event_id))
 
 
+@app.route('/workspace/<int:event_id>/add_participant', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'])
+def add_participant(event_id):
+    event = EVENTS.get(event_id)
+    if event:
+        name = request.form.get('name', '').strip()
+        grade = request.form.get('grade', '').strip()
+        email = request.form.get('email', '').strip()
+        status = request.form.get('status', 'Confirmed').strip()
+        
+        if "participants" not in event:
+            event["participants"] = []
+            
+        new_id = max([p['id'] for p in event["participants"]], default=0) + 1
+        
+        event["participants"].append({
+            "id": new_id,
+            "name": name,
+            "grade": grade,
+            "email": email,
+            "status": status
+        })
+        flash(f"Student '{name}' added to participating list!", "success")
+    return redirect(url_for('event_workspace', event_id=event_id))
+
+
+@app.route('/workspace/<int:event_id>/edit_participant/<int:part_id>', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'])
+def edit_participant(event_id, part_id):
+    event = EVENTS.get(event_id)
+    if event:
+        for p in event.get("participants", []):
+            if p["id"] == part_id:
+                p["name"] = request.form.get('name', p["name"])
+                p["grade"] = request.form.get('grade', p["grade"])
+                p["email"] = request.form.get('email', p["email"])
+                p["status"] = request.form.get('status', p["status"])
+                flash(f"Participant details updated successfully!", "success")
+                break
+    return redirect(url_for('event_workspace', event_id=event_id))
+
+
+@app.route('/workspace/<int:event_id>/delete_participant/<int:part_id>', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'])
+def delete_participant(event_id, part_id):
+    event = EVENTS.get(event_id)
+    if event:
+        event["participants"] = [p for p in event.get("participants", []) if p["id"] != part_id]
+        flash("Participant removed successfully!", "success")
+    return redirect(url_for('event_workspace', event_id=event_id))
+
+
+@app.route('/workspace/<int:event_id>/add_purchase', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Treasurer', 'Teacher', 'Stuco Member'])
+def add_purchase(event_id):
+    event = EVENTS.get(event_id)
+    if event:
+        item = request.form.get('item', '').strip()
+        try:
+            cost = float(request.form.get('cost', '0.0'))
+        except ValueError:
+            cost = 0.0
+        buyer = request.form.get('buyer', '').strip() or current_user.name
+        date = request.form.get('date', '').strip()
+        notes = request.form.get('notes', '').strip()
+
+        if "purchases" not in event:
+            event["purchases"] = []
+
+        new_id = max([p['id'] for p in event["purchases"]], default=0) + 1
+        event["purchases"].append({
+            "id": new_id,
+            "item": item,
+            "cost": cost,
+            "buyer": buyer,
+            "date": date,
+            "notes": notes
+        })
+        flash(f"Purchased item '{item}' logged under event budget!", "success")
+    return redirect(url_for('event_workspace', event_id=event_id))
+
+
+@app.route('/workspace/<int:event_id>/delete_purchase/<int:purchase_id>', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Treasurer', 'Teacher', 'Stuco Member'])
+def delete_purchase(event_id, purchase_id):
+    event = EVENTS.get(event_id)
+    if event:
+        event["purchases"] = [p for p in event.get("purchases", []) if p["id"] != purchase_id]
+        flash("Purchased item record removed.", "success")
+    return redirect(url_for('event_workspace', event_id=event_id))
+
+
 @app.route('/workspace/<int:event_id>/upload_photo', methods=['POST'])
 @login_required
 def upload_photo(event_id):
@@ -689,12 +809,12 @@ def upload_photo(event_id):
 # 4. Meetings Hub — public view, login required to edit
 @app.route('/meetings')
 def meetings_hub():
-    return render_template('meetings.html', meetings=MEETINGS)
-
+    return render_template('meetings.html', meetings=MEETINGS, events=list(EVENTS.values()))
 
 
 @app.route('/meetings/add', methods=['POST'])
 @login_required
+@require_role(['President', 'Vice President', 'Secretary'])
 def add_meeting():
     file = request.files.get('agenda_file')
     filename = ""
@@ -722,35 +842,95 @@ def add_meeting():
 
 @app.route('/meetings/<int:meeting_id>/update_notes', methods=['POST'])
 @login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Teacher', 'Stuco Member'])
 def update_meeting_notes(meeting_id):
     meeting = next((m for m in MEETINGS if m['id'] == meeting_id), None)
     if meeting:
         meeting['notes'] = request.form.get('notes', '')
         meeting['status'] = request.form.get('status', meeting['status'])
-        new_task = request.form.get('new_task')
+        new_task = request.form.get('new_task', '').strip()
+        
         if new_task:
+            assignee = request.form.get('task_assignee', 'Unassigned').strip()
+            target_event_id_str = request.form.get('target_event_id', '').strip()
+            
+            event_id = None
+            event_title = None
+            
+            if target_event_id_str.isdigit():
+                event_id = int(target_event_id_str)
+                target_event = EVENTS.get(event_id)
+                if target_event:
+                    event_title = target_event.get("title")
+                    # Add task row to event workspace automatically
+                    new_row_id = max([r['id'] for r in target_event.get("tasks", [])], default=100) + 1
+                    if "tasks" not in target_event:
+                        target_event["tasks"] = []
+                    target_event["tasks"].append({
+                        "id": new_row_id,
+                        "date": meeting.get("date", "Pre-event"),
+                        "task": new_task,
+                        "assignee": assignee,
+                        "details": f"From Meeting: {meeting['title']}",
+                        "notes": f"Action item created in meeting on {meeting.get('date')}",
+                        "status": "To Do"
+                    })
+                    flash(f"Action item '{new_task}' synced to workspace for '{event_title}'!", "success")
+
             meeting['action_items'].append({
                 "task": new_task,
-                "assignee": request.form.get('task_assignee', 'Unassigned'),
+                "assignee": assignee,
+                "event_id": event_id,
+                "event_title": event_title,
                 "done": False
             })
-        flash("Meeting minutes saved!", "success")
+            if not event_title:
+                flash("Meeting notes and action item saved!", "success")
+        else:
+            flash("Meeting notes updated!", "success")
+            
     return redirect(url_for('meetings_hub'))
 
 
-# 5. Treasurer Portal & Budget Requisitions
+# 5. Treasurer Portal — Event-Specific Budget Overview
 @app.route('/budget')
 @login_required
 def budget_portal():
-    total_requested = sum(r['amount'] for r in BUDGET_REQUESTS)
-    total_approved = sum(r['amount'] for r in BUDGET_REQUESTS if r['status'] in ['Approved', 'Reimbursed'])
-    pending_count = sum(1 for r in BUDGET_REQUESTS if r['status'] == 'Pending')
+    event_budgets = []
+    grand_total_allocated = 0.0
+    grand_total_spent = 0.0
+
+    for event_id, event in EVENTS.items():
+        raw_budget_str = event.get("budget_allocated", "$0").replace('$', '').replace(',', '').strip()
+        try:
+            total_budget = float(raw_budget_str)
+        except ValueError:
+            total_budget = 0.0
+
+        purchases = event.get("purchases", [])
+        total_spent = sum(float(p.get("cost", 0)) for p in purchases)
+        remaining = total_budget - total_spent
+
+        grand_total_allocated += total_budget
+        grand_total_spent += total_spent
+
+        event_budgets.append({
+            "id": event_id,
+            "title": event.get("title"),
+            "category": event.get("category"),
+            "display_date": event.get("display_date"),
+            "total_budget": total_budget,
+            "total_spent": total_spent,
+            "remaining": remaining,
+            "purchases": purchases
+        })
+
     return render_template(
         'budget.html',
-        requests=BUDGET_REQUESTS,
-        total_requested=f"{total_requested:,.2f}",
-        total_approved=f"{total_approved:,.2f}",
-        pending_count=pending_count
+        events=event_budgets,
+        grand_total_allocated=grand_total_allocated,
+        grand_total_spent=grand_total_spent,
+        grand_remaining=grand_total_allocated - grand_total_spent
     )
 
 
@@ -812,8 +992,8 @@ def submit_vending_suggestion():
             "id": new_id,
             "item_name": item_name,
             "category": request.form.get('category', 'Snacks'),
-            "suggested_by": request.form.get('suggested_by', current_user.name),
-            "reason": request.form.get('reason', ''),
+            "suggested_by": "Anonymous",
+            "reason": "",
             "votes": 1,
             "status": "Under Review"
         })
@@ -831,13 +1011,59 @@ def vote_suggestion(suggestion_id):
     return redirect(url_for('vending_hub'))
 
 
-@app.route('/vending/admin/update_stock/<int:item_id>', methods=['POST'])
+@app.route('/vending/add', methods=['POST'])
 @login_required
-def update_stock_status(item_id):
+@require_role(['President', 'Vice President', 'Secretary', 'Treasurer', 'Teacher', 'Stuco Member'])
+def add_vending_item():
+    name = request.form.get('name')
+    if name:
+        new_id = max([i['id'] for i in VENDING_ITEMS], default=0) + 1
+        try:
+            price = float(request.form.get('price', '0.0'))
+        except ValueError:
+            price = 0.0
+        VENDING_ITEMS.append({
+            "id": new_id,
+            "name": name,
+            "category": request.form.get('category', 'Snacks'),
+            "price": price,
+            "status": request.form.get('status', 'In Stock'),
+            "badge": request.form.get('badge', ''),
+            "icon": request.form.get('icon', '🍿'),
+            "description": request.form.get('description', '')
+        })
+        flash(f"Vending item '{name}' added successfully!", "success")
+    return redirect(url_for('vending_hub'))
+
+
+@app.route('/vending/edit/<int:item_id>', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Treasurer', 'Teacher', 'Stuco Member'])
+def edit_vending_item(item_id):
     item = next((i for i in VENDING_ITEMS if i['id'] == item_id), None)
     if item:
+        try:
+            price = float(request.form.get('price', '0.0'))
+        except ValueError:
+            price = item['price']
+        item['name'] = request.form.get('name', item['name'])
+        item['category'] = request.form.get('category', item['category'])
+        item['price'] = price
         item['status'] = request.form.get('status', item['status'])
-        flash(f"Updated status for {item['name']}", "success")
+        item['badge'] = request.form.get('badge', item['badge'])
+        item['icon'] = request.form.get('icon', item['icon'])
+        item['description'] = request.form.get('description', item['description'])
+        flash(f"Vending item '{item['name']}' updated successfully!", "success")
+    return redirect(url_for('vending_hub'))
+
+
+@app.route('/vending/delete/<int:item_id>', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President', 'Secretary', 'Treasurer', 'Teacher', 'Stuco Member'])
+def delete_vending_item(item_id):
+    global VENDING_ITEMS
+    VENDING_ITEMS[:] = [i for i in VENDING_ITEMS if i['id'] != item_id]
+    flash("Vending item deleted successfully!", "success")
     return redirect(url_for('vending_hub'))
 
 
@@ -1165,19 +1391,72 @@ def admin_edit_leader():
     name = request.form.get('name', '').strip()
     role = request.form.get('role', '').strip()
     grade = request.form.get('grade', '').strip()
-    committee = request.form.get('committee', '').strip()
     quote = request.form.get('quote', '').strip()
     email = request.form.get('email', '').strip()
 
     if 0 <= index < len(STUCO_MEMBERS):
+        old_email = STUCO_MEMBERS[index].get("email", "").strip().lower()
+        new_email = email.strip().lower()
+
+        # Update profile
         STUCO_MEMBERS[index] = {
             "name": name,
             "role": role,
             "grade": grade,
-            "committee": committee,
             "quote": quote,
             "email": email
         }
+
+        # Synchronize corresponding account in ACCOUNTS
+        if old_email in ACCOUNTS:
+            acct_data = ACCOUNTS.pop(old_email)
+            acct_data["name"] = name
+            
+            # Map clean roles to account authorization levels
+            acct_role = "Stuco Member"
+            if "President" in role and "Vice" not in role:
+                acct_role = "President"
+            elif "Vice President" in role or "Vice-President" in role:
+                acct_role = "Vice President"
+            elif "Secretary" in role:
+                acct_role = "Secretary"
+            elif "Treasurer" in role:
+                acct_role = "Treasurer"
+            elif "Teacher" in role or "Advisor" in role:
+                acct_role = "Teacher"
+            acct_data["role"] = acct_role
+            acct_data["can_edit_updates"] = acct_role in ["President", "Vice President", "Secretary", "Teacher"]
+            
+            ACCOUNTS[new_email] = acct_data
+
+            # Update logged-in session values if matching
+            for user_id, active_user in active_users.items():
+                if active_user.email.lower() == old_email:
+                    active_user.email = new_email
+                    active_user.name = name
+                    active_user.role = acct_role
+                    active_user.can_edit_updates = acct_data["can_edit_updates"]
+                    break
+        else:
+            # Create a new login account for this leader email if it wasn't registered
+            acct_role = "Stuco Member"
+            if "President" in role and "Vice" not in role:
+                acct_role = "President"
+            elif "Vice President" in role or "Vice-President" in role:
+                acct_role = "Vice President"
+            elif "Secretary" in role:
+                acct_role = "Secretary"
+            elif "Treasurer" in role:
+                acct_role = "Treasurer"
+            elif "Teacher" in role or "Advisor" in role:
+                acct_role = "Teacher"
+                
+            ACCOUNTS[new_email] = {
+                "name": name,
+                "role": acct_role,
+                "can_edit_updates": acct_role in ["President", "Vice President", "Secretary", "Teacher"]
+            }
+
         flash(f"Leader profile for {name} updated successfully!", "success")
     return redirect(url_for('admin_page'))
 
@@ -1271,8 +1550,9 @@ def add_calendar_event():
     time = request.form.get('time', '').strip()
     location = request.form.get('location', '').strip()
     category = request.form.get('category', '').strip()
+    scope = request.form.get('scope', 'Entire School').strip()
+    requires_booking = request.form.get('requires_booking') in ['true', 'on'] or category == 'Paid Event'
     lead = request.form.get('lead', '').strip()
-    committee = request.form.get('committee', '').strip()
     budget = request.form.get('budget', '$0.00').strip()
     description = request.form.get('description', '').strip()
 
@@ -1297,9 +1577,11 @@ def add_calendar_event():
         "display_date": display_date,
         "time": time or "TBD",
         "location": location or "Main Campus",
-        "category": category or "General",
+        "category": category or "Free School Event",
+        "scope": scope,
+        "requires_booking": requires_booking,
+        "participants": [],
         "lead": lead or current_user.name,
-        "committee": committee or "General",
         "budget_allocated": budget,
         "description": description,
         "ticket_link": "",
@@ -1319,12 +1601,16 @@ def add_calendar_event():
 def edit_calendar_event(event_id):
     event = EVENTS.get(event_id)
     if event:
+        category = request.form.get('category', event.get("category", "Free School Event"))
+        requires_booking = request.form.get('requires_booking') in ['true', 'on'] or category == 'Paid Event'
+
         event["title"] = request.form.get('title', event["title"])
         event["time"] = request.form.get('time', event["time"])
         event["location"] = request.form.get('location', event["location"])
-        event["category"] = request.form.get('category', event["category"])
+        event["category"] = category
+        event["scope"] = request.form.get('scope', event.get("scope", "Entire School"))
+        event["requires_booking"] = requires_booking
         event["lead"] = request.form.get('lead', event["lead"])
-        event["committee"] = request.form.get('committee', event["committee"])
         event["budget_allocated"] = request.form.get('budget', event["budget_allocated"])
         event["description"] = request.form.get('description', event["description"])
         
@@ -1365,6 +1651,89 @@ def edit_event_booking(event_id):
         event["ticket_status"] = ticket_status or "Free Entry"
         flash(f"Booking URL and status updated for '{event['title']}'!", "success")
     return redirect(url_for('public_calendar'))
+
+
+# ==========================================
+# VOLUNTEER OPPORTUNITIES DATA & ROUTES
+# ==========================================
+
+VOLUNTEER_OPPORTUNITIES = [
+    {
+        "id": 1,
+        "event_id": 1,
+        "title": "Homecoming Setup Crew",
+        "date": "2026-10-24",
+        "time": "12:00 PM - 4:00 PM",
+        "hours_given": 4.0,
+        "spots_needed": 10,
+        "task_description": "Assemble tables, hang banners, test lighting systems, and arrange sound equipment in the Gym.",
+        "signups": [
+            {"email": "student@bjsmicschool.com", "name": "Sam V.", "approved": True},
+            {"email": "volunteer_test@bjsmicschool.com", "name": "Alex Volunteer", "approved": False}
+        ]
+    },
+    {
+        "id": 2,
+        "event_id": 2,
+        "title": "Pep Rally Popsicle Distribution",
+        "date": "2026-08-28",
+        "time": "2:30 PM - 3:30 PM",
+        "hours_given": 1.5,
+        "spots_needed": 5,
+        "task_description": "Pass out free popsicles to students entering the Central Courtyard during class competitions.",
+        "signups": []
+    }
+]
+
+
+@app.route('/volunteers')
+@login_required
+def volunteers_page():
+    return render_template('volunteers.html', opportunities=VOLUNTEER_OPPORTUNITIES)
+
+
+@app.route('/volunteers/signup/<int:op_id>', methods=['POST'])
+@login_required
+def signup_volunteer(op_id):
+    op = next((o for o in VOLUNTEER_OPPORTUNITIES if o["id"] == op_id), None)
+    if op:
+        # Check if already signed up
+        already_signed = any(s["email"].lower() == current_user.email.lower() for s in op["signups"])
+        if already_signed:
+            flash("You have already signed up for this opportunity!", "warning")
+        else:
+            op["signups"].append({
+                "email": current_user.email.lower(),
+                "name": current_user.name,
+                "approved": False
+            })
+            flash("Successfully signed up! Wait for President or Vice President approval.", "success")
+    return redirect(url_for('volunteers_page'))
+
+
+@app.route('/volunteers/approve/<int:op_id>/<string:email>', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President'])
+def approve_volunteer(op_id, email):
+    op = next((o for o in VOLUNTEER_OPPORTUNITIES if o["id"] == op_id), None)
+    if op:
+        for s in op["signups"]:
+            if s["email"].lower() == email.lower():
+                s["approved"] = True
+                flash(f"Approved volunteer signup for {s['name']}!", "success")
+                break
+    return redirect(url_for('volunteers_page'))
+
+
+@app.route('/volunteers/decline/<int:op_id>/<string:email>', methods=['POST'])
+@login_required
+@require_role(['President', 'Vice President'])
+def decline_volunteer(op_id, email):
+    op = next((o for o in VOLUNTEER_OPPORTUNITIES if o["id"] == op_id), None)
+    if op:
+        op["signups"] = [s for s in op["signups"] if s["email"].lower() != email.lower()]
+        flash(f"Declined volunteer signup for {email}.", "success")
+    return redirect(url_for('volunteers_page'))
 
 
 # ==========================================

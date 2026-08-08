@@ -326,6 +326,7 @@
             <a href="/budget" class="nav-link">Treasurer Portal</a>
             <a href="/vending" class="nav-link">Vending Hub</a>
             <a href="/updates" class="nav-link">Updates</a>
+            <a href="/volunteers" class="nav-link">Volunteers</a>
             <a href="/stats" class="nav-link">📊 Statistics</a>
             {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher'] %}
             <a href="/admin" class="nav-link" style="border:1.5px solid var(--primary);color:var(--primary);">⚙️ Admin</a>
@@ -427,7 +428,7 @@
                     </div>
                     <div class="member-name">{{ member.name }}</div>
                     <div class="member-role">{{ member.role }}</div>
-                    <div class="member-grade">{{ member.grade }} • {{ member.committee }}</div>
+                    <div class="member-grade">{{ member.grade }}</div>
                     <div class="member-quote">"{{ member.quote }}"</div>
                     <div class="member-email">✉️ {{ member.email }}</div>
                 </div>

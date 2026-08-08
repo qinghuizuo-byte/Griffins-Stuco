@@ -224,6 +224,7 @@
             <a href="/calendar" class="nav-link active">Calendar</a>
             <a href="/meetings" class="nav-link">Meetings</a>
             <a href="/updates" class="nav-link">Updates</a>
+            <a href="/volunteers" class="nav-link">Volunteers</a>
             <a href="/stats" class="nav-link">Statistics</a>
             {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher'] %}
             <a href="/admin" class="nav-link">Admin</a>
@@ -260,7 +261,17 @@
         {% for event in events %}
         <div class="event-card">
             <div onclick="openEventModal({{ event.id }})" style="cursor: pointer; flex-grow: 1;">
-                <span class="event-category">{{ event.category }}</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px;">
+                    {% if event.category == 'Paid Event' %}
+                    <span class="event-category" style="margin-bottom: 0; background: #fef3c7; color: #92400e;">🎟️ Paid Event (Booking Required)</span>
+                    {% else %}
+                    <span class="event-category" style="margin-bottom: 0;">{{ event.category }}</span>
+                    {% if event.requires_booking %}
+                    <span class="event-category" style="margin-bottom: 0; background: #fef3c7; color: #92400e;">🎟️ Booking Required</span>
+                    {% endif %}
+                    {% endif %}
+                    <span class="event-category" style="margin-bottom: 0; background: #e2e8f0; color: #475569;">{{ event.scope or 'Entire School' }}</span>
+                </div>
                 <div class="event-title">{{ event.title }}</div>
                 <div class="event-info">📅 {{ event.display_date }}</div>
                 <div class="event-info">⏰ {{ event.time }}</div>
@@ -271,7 +282,7 @@
             <div style="margin-top: 16px; border-top: 1px solid var(--border-color); padding-top: 14px; display: flex; flex-direction: column; gap: 8px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <span style="font-size: 0.8rem; font-weight: 700; color: var(--primary);">{{ event.ticket_status }}</span>
-                    <button onclick="openEventModal({{ event.id }})" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;">View Timeline</button>
+                    <button onclick="openEventModal({{ event.id }})" class="btn btn-outline" style="padding: 4px 10px; font-size: 0.8rem;">Details</button>
                 </div>
                 
                 {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher'] %}
@@ -327,11 +338,24 @@
                 <div class="form-group">
                     <label>Category</label>
                     <select name="category">
-                        <option value="School Dance">School Dance</option>
-                        <option value="Spirit Rally">Spirit Rally</option>
-                        <option value="Fair">Fair / Festival</option>
-                        <option value="General Activity">General Activity</option>
+                        <option value="Paid Event">Paid Event (Booking Required)</option>
+                        <option value="House Game">House Game</option>
+                        <option value="Free School Event">Free School Event</option>
+                        <option value="Optional Activity">Optional Activity</option>
                     </select>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
+                <div class="form-group">
+                    <label>Scope / Audience</label>
+                    <select name="scope">
+                        <option value="Entire School">Entire School Event</option>
+                        <option value="High School">High School Event</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 14px;">
+                    <input type="checkbox" name="requires_booking" id="add_requires_booking" value="true">
+                    <label for="add_requires_booking" style="margin-bottom: 0; font-weight: bold; font-size: 0.8rem; cursor: pointer;">Requires Booking</label>
                 </div>
             </div>
             <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px;">
@@ -385,11 +409,24 @@
                 <div class="form-group">
                     <label>Category</label>
                     <select name="category" id="edit_category">
-                        <option value="School Dance">School Dance</option>
-                        <option value="Spirit Rally">Spirit Rally</option>
-                        <option value="Fair">Fair / Festival</option>
-                        <option value="General Activity">General Activity</option>
+                        <option value="Paid Event">Paid Event (Booking Required)</option>
+                        <option value="House Game">House Game</option>
+                        <option value="Free School Event">Free School Event</option>
+                        <option value="Optional Activity">Optional Activity</option>
                     </select>
+                </div>
+            </div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: center;">
+                <div class="form-group">
+                    <label>Scope / Audience</label>
+                    <select name="scope" id="edit_scope">
+                        <option value="Entire School">Entire School Event</option>
+                        <option value="High School">High School Event</option>
+                    </select>
+                </div>
+                <div class="form-group" style="display: flex; align-items: center; gap: 8px; margin-top: 14px;">
+                    <input type="checkbox" name="requires_booking" id="edit_requires_booking" value="true">
+                    <label for="edit_requires_booking" style="margin-bottom: 0; font-weight: bold; font-size: 0.8rem; cursor: pointer;">Requires Booking</label>
                 </div>
             </div>
             <div style="display: grid; grid-template-columns: 1.5fr 1fr; gap: 12px;">

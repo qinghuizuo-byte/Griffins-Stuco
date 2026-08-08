@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Stuco Vending Machine Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-main: #f0f6ff;
@@ -14,12 +15,15 @@
             --text-muted: #64748b;
             --card-bg: #ffffff;
             --border-color: #cbd5e1;
+            --danger: #ef4444;
+            --danger-light: #fef2f2;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', -apple-system, sans-serif; }
         body { background-color: var(--bg-main); color: var(--text-dark); padding: 24px; }
         .container { max-width: 1200px; margin: 0 auto; }
 
+        /* Navbar */
         .navbar {
             background: var(--card-bg);
             border-radius: 12px;
@@ -31,8 +35,14 @@
             margin-bottom: 24px;
             border-left: 6px solid var(--primary);
         }
-        .brand-title { font-size: 1.25rem; font-weight: 700; color: var(--primary-dark); }
-        .griffin-badge { background: var(--primary-light); color: var(--primary); padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; font-weight: 600; }
+        .brand-title { font-size: 1.25rem; font-weight: 800; color: var(--primary-dark); }
+        .nav-links { display: flex; gap: 14px; align-items: center; }
+        .nav-link {
+            text-decoration: none; color: var(--text-dark); font-weight: 600; font-size: 0.88rem;
+            padding: 7px 14px; border-radius: 8px; transition: background 0.15s;
+        }
+        .nav-link:hover { background: var(--primary-light); color: var(--primary); }
+        .nav-link.active { background: var(--primary); color: white; }
 
         .grid-layout { display: grid; grid-template-columns: 1fr 2fr; gap: 24px; }
         @media (max-width: 900px) { .grid-layout { grid-template-columns: 1fr; } }
@@ -53,74 +63,91 @@
             border-bottom: 2px solid var(--primary-light);
             padding-bottom: 10px;
         }
-        .card-title { font-size: 1.2rem; color: var(--primary-dark); font-weight: 700; }
+        .card-title { font-size: 1.2rem; color: var(--primary-dark); font-weight: 800; }
 
         .form-group { margin-bottom: 12px; }
-        label { display: block; font-size: 0.85rem; font-weight: 600; margin-bottom: 4px; }
-        input[type="text"], select, textarea {
-            width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem;
+        label { display: block; font-size: 0.82rem; font-weight: 700; margin-bottom: 4px; }
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%; padding: 10px; border: 1.5px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; font-family: inherit; outline: none;
         }
+        input[type="text"]:focus, input[type="number"]:focus, select:focus, textarea:focus { border-color: var(--primary); }
         textarea { resize: vertical; min-height: 70px; }
 
         .btn {
             background-color: var(--primary); color: white; border: none; padding: 10px 18px;
-            border-radius: 6px; font-weight: 600; cursor: pointer; transition: background 0.2s ease;
+            border-radius: 6px; font-weight: 700; cursor: pointer; transition: background 0.2s ease;
+            font-size: 0.85rem; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
         }
         .btn:hover { background-color: var(--primary-dark); }
-        .btn-sm { padding: 5px 10px; font-size: 0.8rem; }
-        .btn-outline { background: transparent; color: var(--primary); border: 1px solid var(--primary); }
+        .btn-sm { padding: 6px 12px; font-size: 0.78rem; }
+        .btn-outline { background: transparent; color: var(--primary); border: 1.5px solid var(--primary); }
         .btn-outline:hover { background: var(--primary-light); }
+        .btn-danger { background-color: var(--danger); }
+        .btn-danger:hover { background-color: #dc2626; }
 
         /* Vending Items Grid */
         .items-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-            gap: 14px;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
             margin-bottom: 24px;
         }
         .item-card {
             background: var(--card-bg);
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            padding: 16px;
+            padding: 20px;
             text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-        .item-icon { font-size: 2.5rem; margin-bottom: 8px; }
-        .item-name { font-size: 0.95rem; font-weight: 700; color: var(--text-dark); margin-bottom: 4px; }
-        .item-price { font-size: 1.1rem; font-weight: 800; color: var(--primary); margin-bottom: 4px; }
-        .item-status { font-size: 0.75rem; color: var(--text-muted); margin-bottom: 8px; }
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+        }
+        .item-icon { font-size: 3rem; margin-bottom: 10px; }
+        .item-name { font-size: 1rem; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; }
+        .item-price { font-size: 1.2rem; font-weight: 900; color: var(--primary); margin-bottom: 6px; }
+        .item-status { font-size: 0.8rem; margin-bottom: 8px; }
 
         /* Suggestion Cards */
         .suggestion-card {
             border: 1px solid #e2e8f0;
             border-radius: 10px;
-            padding: 14px;
+            padding: 16px;
             margin-bottom: 12px;
             background: #fff;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: center;
             gap: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.01);
         }
-        .suggestion-name { font-size: 1rem; font-weight: 700; color: var(--text-dark); margin-bottom: 2px; }
-        .suggestion-meta { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 4px; }
-        .suggestion-reason { font-size: 0.82rem; color: var(--text-dark); font-style: italic; }
-        .vote-count { font-size: 1.4rem; font-weight: 800; color: var(--primary); text-align: center; min-width: 50px; }
-        .vote-label { font-size: 0.7rem; color: var(--text-muted); text-align: center; }
+        .suggestion-name { font-size: 1.05rem; font-weight: 800; color: var(--text-dark); margin-bottom: 4px; }
+        .suggestion-meta { font-size: 0.8rem; color: var(--text-muted); display: flex; align-items: center; gap: 8px; }
+        .vote-count { font-size: 1.4rem; font-weight: 900; color: var(--primary); text-align: center; min-width: 50px; }
+        .vote-label { font-size: 0.72rem; color: var(--text-muted); text-align: center; }
 
+        .badge {
+            display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
+        }
         .status-badge {
-            display: inline-block; padding: 3px 8px; border-radius: 10px; font-size: 0.72rem; font-weight: 700;
+            display: inline-block; padding: 4px 8px; border-radius: 6px; font-size: 0.72rem; font-weight: 700;
         }
         .status-Under-Review { background: #fef3c7; color: #92400e; }
         .status-Approved { background: #dcfce7; color: #166534; }
 
-        .alert { padding: 12px; background: #d1e7dd; color: #0f5132; border-radius: 6px; margin-bottom: 16px; }
+        .alert { padding: 12px 16px; background: #d1e7dd; color: #0f5132; border-radius: 8px; margin-bottom: 20px; font-size: 0.9rem; }
 
-        .section-title {
-            font-size: 1.1rem;
-            font-weight: 700;
-            color: var(--primary-dark);
-            margin-bottom: 14px;
+        /* Modals */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); z-index: 1000; align-items: center; justify-content: center;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; border-radius: 12px; padding: 24px; width: 100%; max-width: 500px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
         }
 
         /* Mobile Responsiveness */
@@ -132,6 +159,17 @@
                 gap: 14px;
                 padding: 14px 18px;
             }
+            .nav-links {
+                flex-wrap: wrap;
+                gap: 8px;
+                width: 100%;
+            }
+            .nav-link {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+                flex-grow: 1;
+                text-align: center;
+            }
             .grid-layout {
                 grid-template-columns: 1fr;
                 gap: 16px;
@@ -140,8 +178,12 @@
                 grid-template-columns: 1fr 1fr;
             }
             .suggestion-card {
-                flex-direction: column;
-                align-items: stretch;
+                flex-direction: row;
+                align-items: center;
+            }
+            .modal-content {
+                width: 95%;
+                padding: 20px;
             }
         }
     </style>
@@ -149,9 +191,23 @@
 <body>
 
 <div class="container">
+    
+    <!-- Navbar Header -->
     <div class="navbar">
         <div class="brand-title">🥤 Stuco Vending Hub</div>
-        <div class="griffin-badge">Main Campus • Student Voice</div>
+        <div class="nav-links">
+            <a href="/" class="nav-link">Home</a>
+            <a href="/calendar" class="nav-link">Calendar</a>
+            <a href="/meetings" class="nav-link">Meetings</a>
+            <a href="/vending" class="nav-link active">Vending Hub</a>
+            <a href="/updates" class="nav-link">Updates</a>
+            <a href="/volunteers" class="nav-link">Volunteers</a>
+            <a href="/stats" class="nav-link">Statistics</a>
+            {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Teacher'] %}
+            <a href="/admin" class="nav-link">Admin</a>
+            {% endif %}
+            <a href="/logout" class="nav-link" style="color:var(--danger);">Sign out</a>
+        </div>
     </div>
 
     {% with messages = get_flashed_messages() %}
@@ -164,17 +220,36 @@
 
     <!-- Current Vending Items -->
     <div class="card">
-        <div class="card-header">
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
             <span class="card-title">🍿 Current Vending Items</span>
+            {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Treasurer', 'Teacher', 'Stuco Member'] %}
+            <button class="btn btn-sm" onclick="openAddItemModal()">➕ Add Vending Item</button>
+            {% endif %}
         </div>
         <div class="items-grid">
             {% for item in items %}
-            <div class="item-card">
-                <div class="item-icon">{{ item.icon }}</div>
-                <div class="item-name">{{ item.name }}</div>
-                <div class="item-price">${{ "%.2f"|format(item.price) }}</div>
-                <div class="item-status">{{ item.status }}</div>
-                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ item.description }}</div>
+            <div class="item-card" style="position: relative; display: flex; flex-direction: column; justify-content: space-between;">
+                <div>
+                    {% if item.badge %}
+                    <span class="badge" style="position: absolute; top: 10px; right: 10px; background: var(--primary-light); color: var(--primary); font-size: 0.65rem;">{{ item.badge }}</span>
+                    {% endif %}
+                    <div class="item-icon">{{ item.icon }}</div>
+                    <div class="item-name">{{ item.name }}</div>
+                    <div class="item-price">${{ "%.2f"|format(item.price) }}</div>
+                    <div class="item-status">
+                        <span class="status-badge" style="background: #e2e8f0; color: #475569;">{{ item.status }}</span>
+                    </div>
+                    <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 8px;">{{ item.description }}</div>
+                </div>
+                
+                {% if current_user.is_authenticated and current_user.role in ['President', 'Vice President', 'Secretary', 'Treasurer', 'Teacher', 'Stuco Member'] %}
+                <div style="margin-top: 16px; display: flex; gap: 8px; justify-content: center; border-top: 1px solid #f1f5f9; padding-top: 12px;">
+                    <button class="btn btn-outline btn-sm" onclick='openEditItemModal({{ item | tojson | safe }})' style="padding: 4px 8px; font-size: 0.75rem;">Edit</button>
+                    <form action="{{ url_for('delete_vending_item', item_id=item.id) }}" method="POST" onsubmit="return confirm('Delete this vending item?');" style="display: inline;">
+                        <button type="submit" class="btn btn-danger btn-sm" style="padding: 4px 8px; font-size: 0.75rem; color: white;">Delete</button>
+                    </form>
+                </div>
+                {% endif %}
             </div>
             {% endfor %}
         </div>
@@ -201,14 +276,6 @@
                             <option value="Sweet Treats">Sweet Treats</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Your Name (optional)</label>
-                        <input type="text" name="suggested_by" placeholder="e.g. Sam V. (Senior)">
-                    </div>
-                    <div class="form-group">
-                        <label>Why should we stock this?</label>
-                        <textarea name="reason" placeholder="Tell us why students would love this!"></textarea>
-                    </div>
                     <button type="submit" class="btn" style="width: 100%; margin-top: 8px;">Submit Suggestion 🎉</button>
                 </form>
             </div>
@@ -226,13 +293,10 @@
                     <div style="flex: 1;">
                         <div class="suggestion-name">{{ sug.item_name }}</div>
                         <div class="suggestion-meta">
-                            {{ sug.category }} · Suggested by {{ sug.suggested_by }}
-                            &nbsp;
+                            {{ sug.category }}
+                            &nbsp;•&nbsp;
                             <span class="status-badge status-{{ sug.status.replace(' ', '-') }}">{{ sug.status }}</span>
                         </div>
-                        {% if sug.reason %}
-                        <div class="suggestion-reason">"{{ sug.reason }}"</div>
-                        {% endif %}
                         <form action="{{ url_for('vote_suggestion', suggestion_id=sug.id) }}" method="POST" style="margin-top: 8px;">
                             <button type="submit" class="btn btn-outline btn-sm">👍 Upvote</button>
                         </form>
@@ -252,5 +316,119 @@
     </div>
 </div>
 
+<!-- ========================================== -->
+<!-- MODAL: ADD VENDING ITEM -->
+<!-- ========================================== -->
+<div class="modal" id="addItemModal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; margin-bottom:18px;">
+            <h3 style="font-weight:800; color:var(--primary-dark);">Add Vending Item</h3>
+            <button onclick="closeAddItemModal()" style="font-size:1.5rem; background:none; border:none; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        <form action="{{ url_for('add_vending_item') }}" method="POST">
+            <div class="form-group">
+                <label>Item Name</label>
+                <input type="text" name="name" placeholder="e.g. Baked Jalapeño Chips" required>
+            </div>
+            <div class="form-group">
+                <label>Icon (Emoji)</label>
+                <input type="text" name="icon" placeholder="e.g. 🍿" required>
+            </div>
+            <div class="form-group">
+                <label>Price ($)</label>
+                <input type="number" step="0.01" name="price" placeholder="e.g. 1.75" required>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select name="category">
+                    <option value="Snacks">Snacks</option>
+                    <option value="Drinks">Drinks</option>
+                    <option value="Healthy Options">Healthy Options</option>
+                    <option value="Sweet Treats">Sweet Treats</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Stock Status</label>
+                <input type="text" name="status" placeholder="e.g. In Stock" required>
+            </div>
+            <div class="form-group">
+                <label>Badge (Optional)</label>
+                <input type="text" name="badge" placeholder="e.g. Popular">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" placeholder="e.g. Located in Main Hall Machine #1."></textarea>
+            </div>
+            <button type="submit" class="btn" style="width:100%; margin-top:8px;">Add Item</button>
+        </form>
+    </div>
+</div>
+
+<!-- ========================================== -->
+<!-- MODAL: EDIT VENDING ITEM -->
+<!-- ========================================== -->
+<div class="modal" id="editItemModal">
+    <div class="modal-content">
+        <div style="display:flex; justify-content:space-between; margin-bottom:18px;">
+            <h3 style="font-weight:800; color:var(--primary-dark);">Edit Vending Item</h3>
+            <button onclick="closeEditItemModal()" style="font-size:1.5rem; background:none; border:none; cursor:pointer; color:var(--text-muted);">&times;</button>
+        </div>
+        <form id="editItemForm" method="POST">
+            <div class="form-group">
+                <label>Item Name</label>
+                <input type="text" name="name" id="edit_name" required>
+            </div>
+            <div class="form-group">
+                <label>Icon (Emoji)</label>
+                <input type="text" name="icon" id="edit_icon" required>
+            </div>
+            <div class="form-group">
+                <label>Price ($)</label>
+                <input type="number" step="0.01" name="price" id="edit_price" required>
+            </div>
+            <div class="form-group">
+                <label>Category</label>
+                <select name="category" id="edit_category">
+                    <option value="Snacks">Snacks</option>
+                    <option value="Drinks">Drinks</option>
+                    <option value="Healthy Options">Healthy Options</option>
+                    <option value="Sweet Treats">Sweet Treats</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Stock Status</label>
+                <input type="text" name="status" id="edit_status" required>
+            </div>
+            <div class="form-group">
+                <label>Badge (Optional)</label>
+                <input type="text" name="badge" id="edit_badge">
+            </div>
+            <div class="form-group">
+                <label>Description</label>
+                <textarea name="description" id="edit_description"></textarea>
+            </div>
+            <button type="submit" class="btn" style="width:100%; margin-top:8px;">Save Changes</button>
+        </form>
+    </div>
+</div>
+
+<script>
+    function openAddItemModal() { document.getElementById('addItemModal').classList.add('active'); }
+    function closeAddItemModal() { document.getElementById('addItemModal').classList.remove('active'); }
+
+    function openEditItemModal(item) {
+        document.getElementById('edit_name').value = item.name;
+        document.getElementById('edit_icon').value = item.icon;
+        document.getElementById('edit_price').value = item.price;
+        document.getElementById('edit_category').value = item.category;
+        document.getElementById('edit_status').value = item.status;
+        document.getElementById('edit_badge').value = item.badge || '';
+        document.getElementById('edit_description').value = item.description || '';
+
+        document.getElementById('editItemForm').action = "/vending/edit/" + item.id;
+        document.getElementById('editItemModal').classList.add('active');
+    }
+    function closeEditItemModal() { document.getElementById('editItemModal').classList.remove('active'); }
+</script>
 </body>
 </html>
