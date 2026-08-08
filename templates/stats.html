@@ -321,6 +321,48 @@
         .no-responses-banner .icon { font-size: 3rem; display: block; margin-bottom: 14px; }
         .no-responses-banner h2 { font-size: 1.4rem; font-weight: 800; color: var(--primary-dark); margin-bottom: 8px; }
         .no-responses-banner p { font-size: 0.92rem; color: var(--muted); margin-bottom: 20px; max-width: 440px; margin-left: auto; margin-right: auto; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body { padding: 14px; }
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 14px;
+                padding: 14px 18px;
+            }
+            .nav-links {
+                flex-wrap: wrap;
+                gap: 8px;
+                width: 100%;
+            }
+            .nav-link {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+                flex-grow: 1;
+                text-align: center;
+            }
+            .page-hero {
+                padding: 24px;
+                margin-bottom: 20px;
+            }
+            .page-hero h1 {
+                font-size: 1.5rem;
+            }
+            .kpi-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .charts-grid, .charts-grid-3 {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .sem-table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
     </style>
 </head>
 <body>

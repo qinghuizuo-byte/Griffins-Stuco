@@ -265,6 +265,50 @@
         }
 
         .member-email { font-size: 0.78rem; color: var(--text-muted); word-break: break-all; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body { padding: 14px; }
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 14px;
+                padding: 14px 18px;
+            }
+            .nav-links {
+                flex-wrap: wrap;
+                gap: 8px;
+                width: 100%;
+            }
+            .nav-link {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+                flex-grow: 1;
+                text-align: center;
+            }
+            .hero-card {
+                padding: 24px;
+                margin-bottom: 20px;
+            }
+            .hero-title {
+                font-size: 1.6rem;
+            }
+            .hero-subtitle {
+                font-size: 0.95rem;
+            }
+            .griffin-watermark {
+                font-size: 6rem;
+                right: 10px;
+                bottom: -20px;
+            }
+            .portal-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .section-title {
+                font-size: 1.2rem;
+            }
+        }
     </style>
 </head>
 <body>

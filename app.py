@@ -57,11 +57,20 @@ google = oauth.register(
 
 # Directory of roles and permissions (editable in the admin panel)
 ACCOUNTS = {
-    "270036@bjsmicschool.com": {"name": "Cellestine", "role": "President", "can_edit_updates": True},
-    "vice@bjsmicschool.com": {"name": "Alex M.", "role": "Vice President", "can_edit_updates": True},
-    "member@bjsmicschool.com": {"name": "Jordan K.", "role": "Stuco Member", "can_edit_updates": False},
-    "student@bjsmicschool.com": {"name": "Sam V.", "role": "Student", "can_edit_updates": False},
-    "teacher@bjsmicschool.com": {"name": "Dr. Smith", "role": "Teacher", "can_edit_updates": True}
+    "270036@bjsmicschool.com": {"name": "Cellestine Zuo", "role": "President", "can_edit_updates": True},
+    "270013@bjsmicschool.com": {"name": "Jerry Li", "role": "Vice President", "can_edit_updates": True},
+    "28010@bjsmicschool.com": {"name": "Lucas Lee", "role": "Secretary", "can_edit_updates": True},
+    "270005@bjsmicschoo.com": {"name": "Amy Feng", "role": "Treasurer", "can_edit_updates": True},
+    "elena_chen@bjsmicschool.com": {"name": "Elena Chen", "role": "Teacher", "can_edit_updates": True},
+    "280007@bjsmicschool.com": {"name": "Lily Goufo", "role": "Stuco Member", "can_edit_updates": False},
+    "290018@bjsmicschool.com": {"name": "Sophie Sun", "role": "Stuco Member", "can_edit_updates": False},
+    "290024@bjsmicschool.com": {"name": "Rocky Yang", "role": "Stuco Member", "can_edit_updates": False},
+    "280024@bjsmicschool.com": {"name": "Mike Zhan", "role": "Stuco Member", "can_edit_updates": False},
+    "280019@bjsmicschool.com": {"name": "Cassie Wu", "role": "Stuco Member", "can_edit_updates": False},
+    "280009@bjsmicschool.com": {"name": "Hyun Lee", "role": "Stuco Member", "can_edit_updates": False},
+    "27270018@bjsmicschool.com": {"name": "Camille Lv", "role": "Stuco Member", "can_edit_updates": False},
+    "290010@bjsmicschool.com": {"name": "Camille Kou", "role": "Stuco Member", "can_edit_updates": False},
+    "student@bjsmicschool.com": {"name": "Sam V.", "role": "Student", "can_edit_updates": False}
 }
 
 login_manager = LoginManager()
@@ -260,44 +269,100 @@ ANNOUNCEMENTS = [
 
 STUCO_MEMBERS = [
     {
-        "name": "Cellestine",
+        "name": "Cellestine Zuo",
         "role": "Student Body President",
         "grade": "Senior (Class of '27)",
         "committee": "Executive Council",
         "quote": "Leading our return to the main campus with transparency, enthusiasm, and unstoppable Griffin spirit!",
-        "email": "president@stuco.school.edu"
+        "email": "270036@bjsmicschool.com"
     },
     {
-        "name": "Alex M.",
+        "name": "Jerry Li",
         "role": "Vice President",
         "grade": "Senior (Class of '27)",
         "committee": "Executive Council",
-        "quote": "Coordinating club affairs and ensuring every student voice is heard in administrative planning.",
-        "email": "vp@stuco.school.edu"
+        "quote": "Coordinating student life activities and serving as the direct channel between student voices and administration.",
+        "email": "270013@bjsmicschool.com"
     },
     {
-        "name": "Jordan K.",
-        "role": "Logistics & Operations Lead",
+        "name": "Lucas Lee",
+        "role": "Secretary",
         "grade": "Junior (Class of '28)",
-        "committee": "Logistics Committee",
-        "quote": "Managing venue bookings, technical setups, and smooth operations across the main campus.",
-        "email": "logistics@stuco.school.edu"
+        "committee": "Executive Council",
+        "quote": "Managing documentations, maintaining schedules, and keeping student leaders fully synchronized.",
+        "email": "28010@bjsmicschool.com"
     },
     {
-        "name": "Taylor S.",
-        "role": "Public Relations Director",
-        "grade": "Junior (Class of '28)",
-        "committee": "Public Relations",
-        "quote": "Designing flyers, managing social updates, and keeping the campus informed on all upcoming events.",
-        "email": "pr@stuco.school.edu"
-    },
-    {
-        "name": "Morgan L.",
+        "name": "Amy Feng",
         "role": "Student Body Treasurer",
         "grade": "Senior (Class of '27)",
         "committee": "Finance & Budget",
         "quote": "Allocating funds fairly across events and maintaining a transparent budget for all student activities.",
-        "email": "treasurer@stuco.school.edu"
+        "email": "270005@bjsmicschoo.com"
+    },
+    {
+        "name": "Lily Goufo",
+        "role": "Activity Officer",
+        "grade": "Junior (Class of '28)",
+        "committee": "Spirit & Events Committee",
+        "quote": "Organizing school dances, spirit rallies, and campus festivals to build our Griffin community.",
+        "email": "280007@bjsmicschool.com"
+    },
+    {
+        "name": "Sophie Sun",
+        "role": "Media Officer",
+        "grade": "Freshman (Class of '29)",
+        "committee": "Publicity & Media",
+        "quote": "Documenting school memories through photos, recap videos, and dynamic visuals.",
+        "email": "290018@bjsmicschool.com"
+    },
+    {
+        "name": "Rocky Yang",
+        "role": "Publicity Officer",
+        "grade": "Freshman (Class of '29)",
+        "committee": "Publicity & Media",
+        "quote": "Designing flyers, managing social channels, and publicizing all upcoming student activities.",
+        "email": "290024@bjsmicschool.com"
+    },
+    {
+        "name": "Mike Zhan",
+        "role": "Chief Technology Officer",
+        "grade": "Junior (Class of '28)",
+        "committee": "Tech & Systems",
+        "quote": "Developing digital tools, maintaining the Stuco site, and managing systems integration.",
+        "email": "280024@bjsmicschool.com"
+    },
+    {
+        "name": "Cassie Wu",
+        "role": "Red House Leader",
+        "grade": "Junior (Class of '28)",
+        "committee": "House Council",
+        "quote": "Fostering collaboration, leading sports meets, and driving Red House to victory!",
+        "email": "280019@bjsmicschool.com"
+    },
+    {
+        "name": "Hyun Lee",
+        "role": "Green House Leader",
+        "grade": "Junior (Class of '28)",
+        "committee": "House Council",
+        "quote": "Bringing green house pride to pep rallies, sports days, and academic challenge basins.",
+        "email": "280009@bjsmicschool.com"
+    },
+    {
+        "name": "Camille Lv",
+        "role": "Yellow House Leader",
+        "grade": "Senior (Class of '27)",
+        "committee": "House Council",
+        "quote": "Powering Yellow House to first place with high energy, house events, and friendly competition.",
+        "email": "27270018@bjsmicschool.com"
+    },
+    {
+        "name": "Camille Kou",
+        "role": "Blue House Leader",
+        "grade": "Freshman (Class of '29)",
+        "committee": "House Council",
+        "quote": "Inspiring blue house solidarity, support, and excellence in every student-led tournament.",
+        "email": "290010@bjsmicschool.com"
     }
 ]
 
@@ -1307,4 +1372,4 @@ def edit_event_booking(event_id):
 # ==========================================
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=True, port=5001)

@@ -122,6 +122,28 @@
             color: var(--primary-dark);
             margin-bottom: 14px;
         }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body { padding: 14px; }
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 14px;
+                padding: 14px 18px;
+            }
+            .grid-layout {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            .items-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+            .suggestion-card {
+                flex-direction: column;
+                align-items: stretch;
+            }
+        }
     </style>
 </head>
 <body>

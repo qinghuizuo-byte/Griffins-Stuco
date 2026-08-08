@@ -111,6 +111,36 @@
 
         details summary { font-size: 0.82rem; font-weight: 700; cursor: pointer; color: var(--primary); margin-top: 8px; }
         details form { margin-top: 10px; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body { padding: 14px; }
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 14px;
+                padding: 14px 18px;
+            }
+            .nav-links {
+                flex-wrap: wrap;
+                gap: 8px;
+                width: 100%;
+            }
+            .nav-link {
+                font-size: 0.8rem;
+                padding: 6px 10px;
+                flex-grow: 1;
+                text-align: center;
+            }
+            .summary-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .grid-layout {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
     </style>
 </head>
 <body>

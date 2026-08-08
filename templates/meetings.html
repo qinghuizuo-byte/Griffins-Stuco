@@ -95,6 +95,21 @@
         .file-link { display: inline-flex; align-items: center; gap: 6px; font-size: 0.85rem; color: var(--primary); text-decoration: none; font-weight: 600; margin-top: 8px; }
         .file-link:hover { text-decoration: underline; }
         .alert { padding: 12px; background: #d1e7dd; color: #0f5132; border-radius: 6px; margin-bottom: 16px; }
+
+        /* Mobile Responsiveness */
+        @media (max-width: 768px) {
+            body { padding: 14px; }
+            .navbar {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 14px;
+                padding: 14px 18px;
+            }
+            .grid-layout {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+        }
     </style>
 </head>
 <body>
