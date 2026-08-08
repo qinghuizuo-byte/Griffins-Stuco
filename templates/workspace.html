@@ -275,8 +275,17 @@
         <div class="brand-title">
             🦅 Stuco Workspace
         </div>
-        <div class="griffin-badge">Main Campus • Griffin Pride</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <div class="griffin-badge">Main Campus &bull; Griffin Pride</div>
+            {% if current_user.is_authenticated %}
+            <a href="/calendar" style="font-size:0.85rem;font-weight:600;color:var(--primary);text-decoration:none;">← Calendar</a>
+            <a href="/logout" style="font-size:0.85rem;font-weight:600;color:#dc2626;text-decoration:none;">Sign out</a>
+            {% else %}
+            <a href="/login" style="font-size:0.85rem;font-weight:700;color:white;background:var(--primary);padding:7px 16px;border-radius:8px;text-decoration:none;">🔑 Sign in to Edit</a>
+            {% endif %}
+        </div>
     </div>
+
 
     <!-- Flash Messages -->
     {% with messages = get_flashed_messages() %}
@@ -335,12 +344,17 @@
                                 </span>
                             </td>
                             <td>
+                                {% if current_user.is_authenticated %}
                                 <form action="{{ url_for('toggle_task', event_id=event.id, task_id=task.id) }}" method="POST">
                                     <button type="submit" class="btn btn-sm">Advance</button>
                                 </form>
+                                {% else %}
+                                <a href="/login" style="font-size:0.78rem;color:var(--primary);font-weight:600;">🔒 Sign in</a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
+
                     </tbody>
                 </table>
             </div>
@@ -350,6 +364,7 @@
                 <div class="card-header">
                     <span class="card-title">Add New Task</span>
                 </div>
+                {% if current_user.is_authenticated %}
                 <form action="{{ url_for('add_task', event_id=event.id) }}" method="POST">
                     <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
                         <div class="form-group">
@@ -378,6 +393,13 @@
                     </div>
                     <button type="submit" class="btn" style="margin-top: 8px;">Add Task to Board</button>
                 </form>
+                {% else %}
+                <div style="text-align:center;padding:24px 16px;">
+                    <div style="font-size:2rem;margin-bottom:10px;">🔒</div>
+                    <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:14px;">Sign in to add or manage tasks.</p>
+                    <a href="/login" style="background:var(--primary);color:white;padding:9px 20px;border-radius:8px;font-weight:700;text-decoration:none;font-size:0.88rem;">🔑 Sign In</a>
+                </div>
+                {% endif %}
             </div>
 
         </div>
@@ -390,6 +412,7 @@
                 <div class="card-header">
                     <span class="card-title">Upload Photo / Layout</span>
                 </div>
+                {% if current_user.is_authenticated %}
                 <form action="{{ url_for('upload_photo', event_id=event.id) }}" method="POST" enctype="multipart/form-data">
                     <div class="form-group">
                         <label>Select Image File</label>
@@ -410,7 +433,15 @@
                     </div>
                     <button type="submit" class="btn" style="width: 100%; margin-top: 8px;">Upload Image</button>
                 </form>
+                {% else %}
+                <div style="text-align:center;padding:24px 16px;">
+                    <div style="font-size:2rem;margin-bottom:10px;">🔒</div>
+                    <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:14px;">Sign in to upload photos and venue layouts.</p>
+                    <a href="/login" style="background:var(--primary);color:white;padding:9px 20px;border-radius:8px;font-weight:700;text-decoration:none;font-size:0.88rem;">🔑 Sign In</a>
+                </div>
+                {% endif %}
             </div>
+
 
             <!-- Uploaded Photos Gallery -->
             <div class="card">

@@ -24,7 +24,11 @@ app.config['GOOGLE_CLIENT_SECRET'] = os.environ.get("GOOGLE_CLIENT_SECRET", "")
 # Restrict to this school domain only
 ALLOWED_DOMAIN = "bjsmicschool.com"
 
+# Dev mode: auto-enabled when Google OAuth is not configured
+DEV_MODE = not (os.environ.get("GOOGLE_CLIENT_ID") and os.environ.get("GOOGLE_CLIENT_SECRET"))
+
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
 
 
 def allowed_file(filename):
@@ -95,7 +99,8 @@ def login_page():
     if current_user.is_authenticated:
         return redirect(url_for('home'))
     error = request.args.get('error')
-    return render_template('login.html', error=error)
+    return render_template('login.html', error=error, dev_mode=DEV_MODE)
+
 
 
 @app.route('/auth/google')
@@ -158,6 +163,26 @@ def logout():
     active_users.pop(current_user.id, None)
     logout_user()
     return redirect(url_for('login_page'))
+
+
+@app.route('/dev-login')
+def dev_login():
+    """Dev-only bypass: auto-login as Cellestine. Disabled when Google credentials are set."""
+    if not DEV_MODE:
+        return redirect(url_for('login_page'))
+    user_id = 'dev-user-cellestine'
+    user = User(
+        user_id=user_id,
+        name='Cellestine (Dev)',
+        email='cellestine@bjsmicschool.com',
+        picture=''
+    )
+    active_users[user_id] = user
+    login_user(user, remember=True)
+    # Skip survey for dev user so you go straight to home
+    survey_completed_users.add(user_id)
+    return redirect(url_for('home'))
+
 
 
 # ==========================================
@@ -452,26 +477,26 @@ def home():
     return render_template('index.html', announcements=ANNOUNCEMENTS, members=STUCO_MEMBERS)
 
 
-# 2. Public Event Calendar & API
+# 2. Public Event Calendar & API — no login needed
 @app.route('/calendar')
-@login_required
 def public_calendar():
     return render_template('calendar.html', events=list(EVENTS.values()))
 
 
+
 @app.route('/api/events/<int:event_id>')
-@login_required
 def get_event_details(event_id):
+
     event = EVENTS.get(event_id)
     if event:
         return jsonify(event)
     return jsonify({"error": "Event not found"}), 404
 
 
-# 3. Event Workspace (To-Dos, Photo Uploads)
+# 3. Event Workspace — public view, login required to edit
 @app.route('/workspace/<int:event_id>')
-@login_required
 def event_workspace(event_id):
+
     event = EVENTS.get(event_id)
     if not event:
         return "Event workspace not found", 404
@@ -531,11 +556,11 @@ def upload_photo(event_id):
     return redirect(url_for('event_workspace', event_id=event_id))
 
 
-# 4. Meetings Hub & Agendas
+# 4. Meetings Hub — public view, login required to edit
 @app.route('/meetings')
-@login_required
 def meetings_hub():
     return render_template('meetings.html', meetings=MEETINGS)
+
 
 
 @app.route('/meetings/add', methods=['POST'])
@@ -800,8 +825,8 @@ def _avg(values):
 # ==========================================
 
 @app.route('/stats')
-@login_required
 def stats_page():
+
     sem_responses = [r for r in SURVEY_RESPONSES if r['survey_type'] == 'first_login']
     event_responses = [r for r in SURVEY_RESPONSES if r['survey_type'] == 'event']
 

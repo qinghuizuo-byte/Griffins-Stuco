@@ -102,7 +102,15 @@
 <div class="container">
     <div class="navbar">
         <div class="brand-title">🦅 Stuco Meetings & Agendas Hub</div>
-        <div class="griffin-badge">Main Campus • Executive Portal</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <div class="griffin-badge">Main Campus • AY 2025–26</div>
+            {% if current_user.is_authenticated %}
+            <a href="/" style="font-size:0.85rem;font-weight:600;color:var(--primary);text-decoration:none;">🏠 Home</a>
+            <a href="/logout" style="font-size:0.85rem;font-weight:600;color:#dc2626;text-decoration:none;">Sign out</a>
+            {% else %}
+            <a href="/login" style="font-size:0.85rem;font-weight:700;color:white;background:var(--primary);padding:7px 16px;border-radius:8px;text-decoration:none;">🔑 Sign in to Edit</a>
+            {% endif %}
+        </div>
     </div>
 
     {% with messages = get_flashed_messages() %}
@@ -121,6 +129,7 @@
                 <div class="card-header">
                     <span class="card-title">Schedule & Upload Agenda</span>
                 </div>
+                {% if current_user.is_authenticated %}
                 <form action="{{ url_for('add_meeting') }}" method="POST" enctype="multipart/form-data">
                     <div class="form-group">
                         <label>Meeting Title</label>
@@ -149,6 +158,13 @@
                     </div>
                     <button type="submit" class="btn" style="width: 100%; margin-top: 8px;">Publish Meeting Agenda</button>
                 </form>
+                {% else %}
+                <div style="text-align:center;padding:32px 16px;">
+                    <div style="font-size:2.5rem;margin-bottom:12px;">🔒</div>
+                    <p style="font-size:0.92rem;color:var(--text-muted);margin-bottom:16px;">Sign in with your <strong>@bjsmicschool.com</strong> account to schedule meetings and upload agendas.</p>
+                    <a href="/login" style="display:inline-block;background:var(--primary);color:white;padding:10px 22px;border-radius:8px;font-weight:700;text-decoration:none;font-size:0.9rem;">🔑 Sign In to Edit</a>
+                </div>
+                {% endif %}
             </div>
         </div>
 
@@ -204,6 +220,7 @@
                             {% if meeting.notes %} View / Edit Meeting Notes {% else %} + Add Meeting Notes & Action Steps {% endif %}
                         </summary>
                         
+                        {% if current_user.is_authenticated %}
                         <form action="{{ url_for('update_meeting_notes', meeting_id=meeting.id) }}" method="POST" style="margin-top: 12px;">
                             <div class="form-group">
                                 <label>Detailed Meeting Minutes / Notes</label>
@@ -228,6 +245,14 @@
                             </div>
                             <button type="submit" class="btn btn-outline" style="font-size: 0.8rem; padding: 6px 12px;">Save Meeting Notes</button>
                         </form>
+                        {% else %}
+                        {% if meeting.notes %}
+                        <div style="margin-top:12px;padding:12px;background:#f8fafc;border-radius:8px;font-size:0.88rem;line-height:1.6;white-space:pre-line;">{{ meeting.notes }}</div>
+                        {% endif %}
+                        <div style="margin-top:10px;padding:10px 14px;background:#fef3c7;border-radius:8px;font-size:0.82rem;color:#92400e;">
+                            🔒 <a href="/login" style="color:var(--primary);font-weight:700;">Sign in</a> to add or edit meeting notes.
+                        </div>
+                        {% endif %}
                     </details>
                 </div>
                 {% endfor %}

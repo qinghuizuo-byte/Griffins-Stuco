@@ -335,7 +335,11 @@
             <a href="/meetings" class="nav-link">Meetings</a>
             <a href="/budget" class="nav-link">Budget</a>
             <a href="/stats" class="nav-link active">Statistics</a>
+            {% if current_user.is_authenticated %}
             <a href="/logout" class="nav-link" style="color:#dc2626;">Sign out</a>
+            {% else %}
+            <a href="/login" class="nav-link" style="background:var(--primary);color:white;">🔑 Sign In</a>
+            {% endif %}
         </div>
     </div>
 

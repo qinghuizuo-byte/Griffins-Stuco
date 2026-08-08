@@ -292,6 +292,7 @@
         </div>
         {% endif %}
 
+        {% if not dev_mode %}
         <a href="{{ url_for('google_login') }}" class="google-btn" id="google-signin-btn">
             <!-- Google Logo SVG -->
             <svg class="google-logo" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -302,8 +303,19 @@
             </svg>
             Sign in with Google School Account
         </a>
+        {% else %}
+        <!-- DEV MODE: Google OAuth not yet configured -->
+        <div style="background:#fef3c7;border:1.5px solid #f59e0b;border-radius:10px;padding:12px 16px;margin-bottom:16px;font-size:0.83rem;color:#92400e;">
+            <strong>⚙️ Dev Mode Active</strong> — Google OAuth not yet configured.<br>
+            Use the button below to enter with a test account.
+        </div>
+        <a href="{{ url_for('dev_login') }}" class="google-btn" id="google-signin-btn"
+           style="background:#0066cc;color:white;border-color:#0066cc;">
+            🦅 Enter as Cellestine (Dev Preview)
+        </a>
+        {% endif %}
 
-        <div class="divider">school accounts only</div>
+        <div class="divider">{% if dev_mode %}dev preview mode{% else %}school accounts only{% endif %}</div>
 
         <div class="school-note">
             <span class="icon">🏫</span>
